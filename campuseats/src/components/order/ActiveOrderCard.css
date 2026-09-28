@@ -1,0 +1,61 @@
+.active-order-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  background: linear-gradient(135deg, var(--color-ink), #34291f);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  margin-bottom: var(--space-8);
+  animation: rise-in var(--duration-base) var(--ease-out) both;
+}
+
+.active-order-card__logo {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+.active-order-card__body { flex: 1; min-width: 0; }
+
+.active-order-card__eyebrow {
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--color-accent);
+  margin-bottom: 4px;
+}
+
+.active-order-card__restaurant {
+  font: var(--text-h3);
+  font-size: 1.15rem;
+  margin-bottom: var(--space-2);
+}
+
+.active-order-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  font-size: 0.85rem;
+  color: rgba(255, 250, 245, 0.75);
+}
+
+.active-order-card__actions {
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .active-order-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .active-order-card__actions { width: 100%; }
+  .active-order-card__actions a { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .active-order-card { animation: none; }
+}

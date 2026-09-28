@@ -1,0 +1,184 @@
+/* ---- Toolbar (search + filters) ---- */
+.admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  align-items: center;
+}
+
+.admin-toolbar__search { flex: 1; min-width: 220px; }
+
+/* ---- Filter tabs / chips ---- */
+.admin-tabs {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+
+.admin-tabs__tab {
+  flex-shrink: 0;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  transition: border-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out);
+}
+
+.admin-tabs__tab:active { transform: scale(0.97); }
+
+.admin-tabs__tab.is-active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+/* ---- Pagination row ---- */
+.admin-pagination-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.admin-pagination-row__count {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+/* ---- Approval action row ---- */
+.approval-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* ---- Responsive table -> card list ----
+   Desktop keeps the shared .table; below 760px each row becomes a
+   labelled card via CSS so nothing overflows horizontally. */
+@media (max-width: 760px) {
+  .admin-table thead { display: none; }
+  .admin-table, .admin-table tbody, .admin-table tr, .admin-table td {
+    display: block;
+    width: 100%;
+  }
+  .admin-table tr {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-4);
+    padding: var(--space-2) var(--space-4);
+    background: var(--color-surface);
+    animation: rise-in var(--duration-base) var(--ease-out) both;
+  }
+  .admin-table td {
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-3) 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    text-align: right;
+  }
+  .admin-table td:last-child { border-bottom: none; }
+  .admin-table td::before {
+    content: attr(data-label);
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    text-align: left;
+  }
+  .admin-table td[data-label=""]::before { display: none; }
+}
+
+/* ---- Row link (whole row clickable to details) ---- */
+.admin-table__row-link {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+/* ---- Detail page layout ---- */
+.admin-detail__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+  align-items: start;
+}
+
+@media (min-width: 960px) {
+  .admin-detail__grid {
+    grid-template-columns: 1.6fr 1fr;
+  }
+}
+
+.admin-detail__panel h3 {
+  font: var(--text-card-title);
+  margin-bottom: var(--space-4);
+}
+
+.admin-detail__panel + .admin-detail__panel {
+  margin-top: var(--space-5);
+}
+
+.admin-detail__field {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.9rem;
+}
+
+.admin-detail__field:last-child { border-bottom: none; }
+
+.admin-detail__field span:first-child { color: var(--color-text-muted); }
+.admin-detail__field span:last-child { font-weight: 600; text-align: right; }
+
+.admin-detail__banner {
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  font-weight: 700;
+  margin-bottom: var(--space-5);
+  animation: rise-in var(--duration-base) var(--ease-out) both;
+}
+
+.admin-detail__banner--warning { background: var(--color-warning-tint); color: var(--color-warning); }
+.admin-detail__banner--info { background: var(--color-info-tint); color: var(--color-info); }
+.admin-detail__banner--success { background: var(--color-success-tint); color: var(--color-success); }
+.admin-detail__banner--error { background: var(--color-error-tint); color: var(--color-error); }
+
+.admin-back-link {
+  display: inline-block;
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-top: var(--space-5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-table tr,
+  .admin-detail__banner {
+    animation: none;
+  }
+}
+
+/* ---- Dashboard layout ---- */
+.admin-dashboard__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+  align-items: start;
+}
+
+@media (min-width: 1100px) {
+  .admin-dashboard__grid {
+    grid-template-columns: 1.7fr 1fr;
+  }
+}

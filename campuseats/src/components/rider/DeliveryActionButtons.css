@@ -1,0 +1,7 @@
+.delivery-actions {
+  display: flex;
+}
+
+.delivery-actions__button {
+  width: 100%;
+}

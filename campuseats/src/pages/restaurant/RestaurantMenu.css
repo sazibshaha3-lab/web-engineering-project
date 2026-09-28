@@ -1,0 +1,25 @@
+.rmenu__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.rmenu__stat {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-5);
+  min-width: 130px;
+}
+
+.rmenu__stat strong {
+  display: block;
+  font-size: 1.3rem;
+  color: var(--color-text);
+}
+
+.rmenu__stat span {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}

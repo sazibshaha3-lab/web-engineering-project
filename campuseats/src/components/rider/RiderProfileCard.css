@@ -1,0 +1,33 @@
+.rider-profile-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.rider-profile-card__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+.rider-profile-card__field span {
+  display: block;
+  font-size: 0.76rem;
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+}
+
+.rider-profile-card__field strong {
+  font-size: 0.95rem;
+  color: var(--color-text);
+}

@@ -1,0 +1,5 @@
+.orders-page__skeleton-card {
+  height: 132px;
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-4);
+}

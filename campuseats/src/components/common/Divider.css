@@ -1,0 +1,23 @@
+.divider {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: var(--space-6) 0;
+}
+
+.divider--labeled {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-6) 0;
+}
+
+.divider--labeled span {
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.divider--labeled p {
+  font: var(--text-body-sm);
+  color: var(--color-text-muted);
+}

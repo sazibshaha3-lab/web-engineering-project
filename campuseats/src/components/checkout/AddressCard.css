@@ -1,0 +1,79 @@
+.address-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  margin-bottom: var(--space-3);
+  transition: border-color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out);
+}
+
+.address-card:hover { border-color: var(--color-primary); }
+
+.address-card.is-selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-tint);
+}
+
+.address-card__radio {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border-strong);
+  flex-shrink: 0;
+  margin-top: 2px;
+  display: grid;
+  place-items: center;
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.address-card.is-selected .address-card__radio {
+  border-color: var(--color-primary);
+}
+
+.address-card__radio-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  transform: scale(0);
+  transition: transform var(--duration-fast) var(--ease-spring, var(--ease-out));
+}
+
+.address-card.is-selected .address-card__radio-dot {
+  transform: scale(1);
+}
+
+.address-card__body { flex: 1; min-width: 0; }
+
+.address-card__top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: 2px;
+}
+
+.address-card__label {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+
+.address-card__line {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.address-card__meta {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.address-card__actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}

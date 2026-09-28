@@ -1,0 +1,65 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.field__label {
+  font: var(--text-label);
+  color: var(--color-text-secondary);
+}
+
+.field__control {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding-inline: var(--space-4);
+  transition: border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.field__control--md { height: 48px; }
+.field__control--lg { height: 54px; }
+
+.field__control:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px var(--color-primary-tint);
+}
+
+.field--error .field__control {
+  border-color: var(--color-error);
+}
+
+.field__icon {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.field__input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: var(--text-body);
+  color: var(--color-text);
+  min-width: 0;
+  height: 100%;
+}
+
+.field__input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.field__message {
+  font: var(--text-body-sm);
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+}
+
+.field__message--error {
+  color: var(--color-error);
+}

@@ -1,0 +1,24 @@
+.rider-shell {
+  min-height: 100vh;
+  background: var(--color-background);
+}
+
+.rider-shell__main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.rider-shell__content {
+  flex: 1;
+  padding: var(--space-6) var(--space-5) var(--space-16);
+}
+
+@media (min-width: 1080px) {
+  .rider-shell__main {
+    margin-left: var(--sidebar-width);
+  }
+  .rider-shell__content {
+    padding: var(--space-8) var(--space-8) var(--space-16);
+  }
+}

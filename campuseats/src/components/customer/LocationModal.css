@@ -1,0 +1,104 @@
+.location-modal__current {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-4);
+  border: 1.5px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  color: var(--color-primary);
+  font-weight: 600;
+  margin-bottom: var(--space-5);
+  transition: border-color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out);
+}
+
+.location-modal__current:hover {
+  background: var(--color-primary-tint);
+  border-color: var(--color-primary);
+}
+
+.location-modal__current:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.location-modal__section-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-3);
+}
+
+.location-modal__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.location-modal__row:hover { background: var(--color-background-alt); }
+.location-modal__row.is-selected { background: var(--color-primary-tint); }
+
+.location-modal__row-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--color-secondary-light);
+  color: var(--color-secondary-dark);
+  flex-shrink: 0;
+}
+
+.location-modal__row-text { flex: 1; min-width: 0; }
+.location-modal__row-text strong { display: block; font-size: 0.92rem; }
+.location-modal__row-text span { font-size: 0.78rem; color: var(--color-text-muted); }
+
+.location-modal__row-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.location-modal__areas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+
+.location-modal__area-chip {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+}
+
+.location-modal__area-chip:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.location-modal__add-form {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.location-modal__manual-link {
+  display: block;
+  text-align: center;
+  width: 100%;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-top: var(--space-3);
+}
+
+.location-modal__manual-link:hover {
+  text-decoration: underline;
+}

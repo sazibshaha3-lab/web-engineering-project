@@ -1,0 +1,28 @@
+.profile-form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.profile-form-grid__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.profile-form-grid__row--three {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.profile-form-grid__actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+@media (max-width: 640px) {
+  .profile-form-grid__row,
+  .profile-form-grid__row--three {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,97 @@
+.customer-home__hero {
+  background: var(--color-ink);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8) var(--space-6);
+  margin-bottom: var(--space-10);
+}
+
+.customer-home__hero h1 {
+  font: var(--text-h1);
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  margin-bottom: var(--space-2);
+  max-width: 22ch;
+}
+
+.customer-home__hero p {
+  color: rgba(255, 250, 245, 0.7);
+  max-width: 46ch;
+  margin-bottom: var(--space-6);
+}
+
+.customer-home__section {
+  margin-bottom: var(--space-10);
+}
+
+.customer-home__section-title {
+  font: var(--text-h2);
+  color: var(--color-ink);
+  margin-bottom: var(--space-4);
+}
+
+.customer-home__quick-actions {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-bottom: var(--space-10);
+}
+
+.quick-action {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  text-align: left;
+  transition: transform var(--duration-base) var(--ease-out), box-shadow var(--duration-base) var(--ease-out);
+}
+
+.quick-action:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.quick-action__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--color-primary-tint);
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.quick-action > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.quick-action strong {
+  color: var(--color-text);
+  font-size: 0.95rem;
+}
+
+.quick-action > span:last-child span {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.customer-home__no-results {
+  text-align: center;
+  padding: var(--space-12) var(--space-6);
+  color: var(--color-text-secondary);
+}
+
+.customer-home__no-results p {
+  margin-bottom: var(--space-3);
+  font-weight: 600;
+}
+
+.customer-home__no-results a {
+  color: var(--color-primary);
+  font-weight: 600;
+}

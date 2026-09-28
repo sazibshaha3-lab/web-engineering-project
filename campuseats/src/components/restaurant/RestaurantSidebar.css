@@ -1,0 +1,93 @@
+.rsidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--sidebar-width);
+  background: var(--color-sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+  transform: translateX(-100%);
+  transition: transform var(--duration-slow) var(--ease-standard);
+}
+
+.rsidebar.is-open { transform: translateX(0); }
+
+.rsidebar__scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 190;
+}
+
+.rsidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  height: var(--topbar-height);
+}
+
+.rsidebar__brand-text {
+  font: var(--text-h3);
+  font-size: 1.1rem;
+  color: var(--color-text-inverse);
+}
+
+.rsidebar__nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rsidebar__link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--color-sidebar-text);
+  font: var(--text-nav);
+  transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+
+.rsidebar__link:hover {
+  background: var(--color-sidebar-bg-hover);
+  color: var(--color-sidebar-text-active);
+}
+
+.rsidebar__link.is-active {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.rsidebar__footer {
+  padding: var(--space-3);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.rsidebar__logout {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--color-sidebar-text);
+  font: var(--text-nav);
+  transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+
+.rsidebar__logout:hover {
+  background: var(--color-error-tint);
+  color: var(--color-error);
+}
+
+@media (min-width: 1080px) {
+  .rsidebar { transform: translateX(0); }
+  .rsidebar__scrim { display: none; }
+}

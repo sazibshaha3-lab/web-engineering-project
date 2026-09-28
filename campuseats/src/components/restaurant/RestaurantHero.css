@@ -1,0 +1,153 @@
+.restaurant-hero {
+  position: relative;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  margin-bottom: var(--space-6);
+  animation: rise-in var(--duration-slow) var(--ease-out) both;
+}
+
+.restaurant-hero__cover {
+  position: relative;
+  height: 260px;
+}
+
+.restaurant-hero__cover img,
+.restaurant-hero__cover .img-fallback {
+  width: 100%;
+  height: 100%;
+}
+
+.restaurant-hero__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(30,22,14,0) 40%, rgba(30,22,14,0.75) 100%);
+}
+
+.restaurant-hero__closed-ribbon {
+  position: absolute;
+  top: var(--space-4);
+  left: var(--space-4);
+  background: var(--color-ink);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.restaurant-hero__actions {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  display: flex;
+  gap: var(--space-2);
+}
+
+.restaurant-hero__actions button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(4px);
+  display: grid;
+  place-items: center;
+  color: var(--color-text);
+  transition: transform var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out);
+}
+
+.restaurant-hero__actions button:hover { background: #fff; transform: translateY(-2px); }
+.restaurant-hero__actions button:active { transform: scale(0.9); }
+
+.restaurant-hero__actions button.is-favorited {
+  color: var(--color-error);
+}
+
+.restaurant-hero__actions button.is-favorited svg {
+  animation: heart-pop 360ms var(--ease-out);
+}
+
+@keyframes heart-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+
+.restaurant-hero__body {
+  background: var(--color-surface);
+  padding: var(--space-6);
+  display: flex;
+  gap: var(--space-5);
+  align-items: flex-start;
+}
+
+.restaurant-hero__logo {
+  width: 76px;
+  height: 76px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 3px solid var(--color-surface);
+  box-shadow: var(--shadow-md);
+  margin-top: -52px;
+  flex-shrink: 0;
+  background: var(--color-surface);
+}
+
+.restaurant-hero__logo img,
+.restaurant-hero__logo .img-fallback {
+  width: 100%;
+  height: 100%;
+}
+
+.restaurant-hero__info { flex: 1; min-width: 0; }
+
+.restaurant-hero__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.restaurant-hero__name {
+  font: var(--text-h1);
+  font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+  color: var(--color-ink);
+}
+
+.restaurant-hero__desc {
+  font: var(--text-body-sm);
+  color: var(--color-text-secondary);
+  max-width: 62ch;
+  margin-bottom: var(--space-3);
+  line-height: 1.6;
+}
+
+.restaurant-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  font-size: 0.88rem;
+  color: var(--color-text-secondary);
+}
+
+.restaurant-hero__meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.restaurant-hero__meta .is-rating {
+  color: var(--color-accent-dark);
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .restaurant-hero__cover { height: 180px; }
+  .restaurant-hero__body { flex-direction: column; padding: var(--space-5); }
+  .restaurant-hero__logo { margin-top: -40px; width: 64px; height: 64px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .restaurant-hero { animation: none; }
+  .restaurant-hero__actions button.is-favorited svg { animation: none; }
+}

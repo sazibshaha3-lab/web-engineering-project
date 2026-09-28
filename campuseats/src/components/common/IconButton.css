@@ -1,0 +1,50 @@
+.icon-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--color-text-secondary);
+  transition: background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.icon-btn--md { width: 42px; height: 42px; }
+.icon-btn--sm { width: 34px; height: 34px; }
+
+.icon-btn--ghost:hover {
+  background: var(--color-background-alt);
+  color: var(--color-ink);
+}
+
+.icon-btn--surface {
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+.icon-btn--surface:hover {
+  color: var(--color-primary);
+  transform: translateY(-1px);
+}
+
+.icon-btn:active {
+  transform: scale(0.93);
+}
+
+.icon-btn__badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--color-surface);
+}

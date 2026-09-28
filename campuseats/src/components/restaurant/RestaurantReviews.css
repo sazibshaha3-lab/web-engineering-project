@@ -1,0 +1,113 @@
+.restaurant-reviews {
+  margin-bottom: var(--space-10);
+}
+
+.restaurant-reviews__summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.restaurant-reviews__score {
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.restaurant-reviews__score strong {
+  font-size: 2.4rem;
+  color: var(--color-ink);
+  line-height: 1;
+  display: block;
+}
+
+.restaurant-reviews__score span {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.restaurant-reviews__stars {
+  color: var(--color-accent);
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+  margin: 6px 0;
+}
+
+.restaurant-reviews__bars {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.restaurant-reviews__bar-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.restaurant-reviews__bar-track {
+  flex: 1;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-border);
+  overflow: hidden;
+}
+
+.restaurant-reviews__bar-fill {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: var(--radius-pill);
+}
+
+.restaurant-reviews__list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.restaurant-review-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+}
+
+.restaurant-review-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.restaurant-review-card__author {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+
+.restaurant-review-card__days {
+  font-size: 0.76rem;
+  color: var(--color-text-muted);
+}
+
+.restaurant-review-card__stars {
+  color: var(--color-accent);
+  display: flex;
+  gap: 1px;
+  margin-bottom: var(--space-2);
+}
+
+.restaurant-review-card p {
+  font-size: 0.88rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}

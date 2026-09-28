@@ -1,0 +1,47 @@
+.food-customization {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.food-customization__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.food-customization__label {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.food-customization__total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.food-customization__price {
+  color: var(--color-primary);
+  font-size: 1.3rem;
+  display: inline-block;
+  transition: transform 180ms var(--ease-out);
+}
+
+.food-customization__price.is-popping {
+  animation: price-pop 220ms var(--ease-out);
+}
+
+@keyframes price-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .food-customization__price.is-popping { animation: none; }
+}

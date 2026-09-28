@@ -1,0 +1,24 @@
+.admin-shell {
+  min-height: 100vh;
+  background: var(--color-background);
+}
+
+.admin-shell__main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-shell__content {
+  flex: 1;
+  padding: var(--space-6) var(--space-5) var(--space-16);
+}
+
+@media (min-width: 1080px) {
+  .admin-shell__main {
+    margin-left: var(--sidebar-width);
+  }
+  .admin-shell__content {
+    padding: var(--space-8) var(--space-8) var(--space-16);
+  }
+}

@@ -1,0 +1,27 @@
+.pickup-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.pickup-info__logo {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.pickup-info__name {
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 2px;
+}
+
+.pickup-info__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}

@@ -1,0 +1,23 @@
+.menu-section {
+  margin-bottom: var(--space-8);
+  animation: fade-in var(--duration-base) var(--ease-out) both;
+}
+
+.menu-section__header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.menu-section__title {
+  font: var(--text-h2);
+  font-size: 1.25rem;
+  color: var(--color-ink);
+  text-transform: capitalize;
+}
+
+.menu-section__count {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}

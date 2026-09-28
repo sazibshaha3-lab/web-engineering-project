@@ -1,0 +1,103 @@
+.cart-item-row {
+  display: grid;
+  grid-template-columns: 72px 1fr auto;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  align-items: center;
+  animation: rise-in var(--duration-base) var(--ease-out) both;
+  transition: opacity var(--duration-base) var(--ease-out), transform var(--duration-base) var(--ease-out);
+}
+
+.cart-item-row.is-removing {
+  opacity: 0;
+  transform: scale(0.96);
+}
+
+.cart-item-row__media {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.cart-item-row__info { min-width: 0; }
+
+.cart-item-row__name {
+  font: var(--text-card-title);
+  font-size: 0.98rem;
+  margin-bottom: 2px;
+}
+
+.cart-item-row__extras {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+}
+
+.cart-item-row__note {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.cart-item-row__unit {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+.cart-item-row__side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.cart-item-row__total {
+  font-weight: 700;
+  color: var(--color-text);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.cart-item-row__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.cart-item-row__remove {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--color-text-muted);
+  transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+
+.cart-item-row__remove:hover {
+  background: var(--color-error-tint);
+  color: var(--color-error);
+}
+
+@media (max-width: 560px) {
+  .cart-item-row {
+    grid-template-columns: 56px 1fr;
+  }
+  .cart-item-row__side {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--space-2);
+  }
+  .cart-item-row__media { width: 56px; height: 56px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cart-item-row { animation: none; }
+}

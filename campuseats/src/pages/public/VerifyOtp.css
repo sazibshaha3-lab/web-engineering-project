@@ -1,0 +1,59 @@
+.verify-otp__resend {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.verify-otp__resend button {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.verify-otp__resend button:hover {
+  text-decoration: underline;
+}
+
+.verify-otp__change {
+  display: block;
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  margin-top: var(--space-2);
+}
+
+.verify-otp__change:hover {
+  color: var(--color-text);
+}
+
+.otp-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-block: var(--space-10);
+}
+
+.otp-success__badge {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--color-success-tint);
+  color: var(--color-success);
+  margin-bottom: var(--space-5);
+  animation: scale-in var(--duration-slow) var(--ease-out) both;
+}
+
+.otp-success h2 {
+  font: var(--text-h2);
+  margin-bottom: var(--space-2);
+}
+
+.otp-success p {
+  color: var(--color-text-secondary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .otp-success__badge { animation: none; }
+}

@@ -1,0 +1,88 @@
+// Unified rider registry (Step 8). The logged-in demo rider account
+// (Step 6/7, matches AuthContext -> RIDER_EMAIL) is rider id "rider1" —
+// the only rider capable of actually accepting live deliveries in this
+// session. The remaining entries are other campus riders the Admin can
+// review, approve/reject and block/unblock from the Riders panel.
+
+export const initialRiders = [
+  {
+    id: "rider1",
+    userId: "u-rider1",
+    name: "Rahim Ahmed",
+    email: "rider@campuseats.test",
+    phone: "+880 1XXX-XXXXXX",
+    avatar: null,
+    vehicleType: "Motorcycle",
+    vehicleNumber: "DHA-15-2481",
+    rating: 4.9,
+    totalDeliveries: 128,
+    approvalStatus: "APPROVED",
+  },
+  {
+    id: "rider2",
+    userId: "u-rider2",
+    name: "Tanvir Ahmed",
+    email: "tanvir.ahmed@campus.edu",
+    phone: "+880 1XXX-XXXXXX",
+    avatar: null,
+    vehicleType: "Bicycle",
+    vehicleNumber: "—",
+    rating: 4.8,
+    totalDeliveries: 340,
+    approvalStatus: "APPROVED",
+  },
+  {
+    id: "rider3",
+    userId: "u-rider3",
+    name: "Mizanur Rahman",
+    email: "mizanur.rahman@campus.edu",
+    phone: "+880 1XXX-XXXXXX",
+    avatar: null,
+    vehicleType: "Motorcycle",
+    vehicleNumber: "DHA-11-7723",
+    rating: 4.7,
+    totalDeliveries: 512,
+    approvalStatus: "APPROVED",
+  },
+  {
+    id: "rider4",
+    userId: "u-rider4",
+    name: "Habibur Rahman",
+    email: "habibur.rahman@campus.edu",
+    phone: "+880 1XXX-XXXXXX",
+    avatar: null,
+    vehicleType: "Bicycle",
+    vehicleNumber: "—",
+    rating: 4.2,
+    totalDeliveries: 88,
+    approvalStatus: "BLOCKED",
+  },
+  {
+    id: "rider5",
+    userId: "u-rider5",
+    name: "Sajidul Islam",
+    email: "sajidul.islam@campus.edu",
+    phone: "+880 1XXX-XXXXXX",
+    avatar: null,
+    vehicleType: "Bicycle",
+    vehicleNumber: "—",
+    rating: 0,
+    totalDeliveries: 0,
+    approvalStatus: "PENDING",
+  },
+  {
+    id: "rider6",
+    userId: "u-rider6",
+    name: "Kamrul Hasan",
+    email: "kamrul.hasan@campus.edu",
+    phone: "+880 1XXX-XXXXXX",
+    avatar: null,
+    vehicleType: "Motorcycle",
+    vehicleNumber: "DHA-22-1190",
+    rating: 0,
+    totalDeliveries: 0,
+    approvalStatus: "PENDING",
+  },
+];
+
+export const LIVE_RIDER_ID = "rider1";

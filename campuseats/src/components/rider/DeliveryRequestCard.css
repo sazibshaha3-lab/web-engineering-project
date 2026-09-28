@@ -1,0 +1,95 @@
+.delivery-request-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  margin-bottom: var(--space-4);
+  animation: rise-in var(--duration-base) var(--ease-out) both;
+  transition: box-shadow var(--duration-base) var(--ease-out), transform var(--duration-base) var(--ease-out);
+}
+
+.delivery-request-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.delivery-request-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.delivery-request-card__id {
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 2px;
+}
+
+.delivery-request-card__time {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.delivery-request-card__total {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--color-primary);
+}
+
+.delivery-request-card__route {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  padding: var(--space-4);
+  background: var(--color-background-alt);
+  border-radius: var(--radius-md);
+}
+
+.delivery-request-card__stop {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.delivery-request-card__stop-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.delivery-request-card__stop-icon--pickup { background: var(--color-primary-tint); color: var(--color-primary); }
+.delivery-request-card__stop-icon--dropoff { background: var(--color-secondary-light); color: var(--color-secondary-dark); }
+
+.delivery-request-card__stop span {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+}
+
+.delivery-request-card__stop strong {
+  font-size: 0.88rem;
+  color: var(--color-text);
+}
+
+.delivery-request-card__meta {
+  display: flex;
+  gap: var(--space-4);
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-4);
+}
+
+.delivery-request-card__actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .delivery-request-card { animation: none; }
+}

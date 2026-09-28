@@ -1,0 +1,31 @@
+.inline-message {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  animation: rise-in var(--duration-fast) var(--ease-out) both;
+}
+
+.inline-message svg { flex-shrink: 0; margin-top: 1px; }
+
+.inline-message--error {
+  background: var(--color-error-tint);
+  color: var(--color-error);
+}
+
+.inline-message--success {
+  background: var(--color-success-tint);
+  color: var(--color-success);
+}
+
+.inline-message--info {
+  background: var(--color-info-tint);
+  color: var(--color-info);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inline-message { animation: none; }
+}

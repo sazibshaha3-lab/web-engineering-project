@@ -1,0 +1,88 @@
+.order-tracking__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.order-tracking__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.order-tracking__title {
+  font: var(--text-h2);
+  margin-bottom: var(--space-6);
+}
+
+.order-tracking__grid {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.order-tracking__panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin-bottom: var(--space-6);
+  animation: rise-in var(--duration-base) var(--ease-out) both;
+}
+
+.order-tracking__panel-title {
+  font: var(--text-card-title);
+  font-size: 1.02rem;
+  margin-bottom: var(--space-5);
+}
+
+.order-tracking__eta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--color-primary-tint);
+  color: var(--color-primary-dark, var(--color-primary));
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-5);
+  font-weight: 700;
+}
+
+.order-tracking__eta span {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.order-tracking__info-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  color: var(--color-text-secondary);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.order-tracking__info-row:last-child { border-bottom: none; }
+.order-tracking__info-row strong { color: var(--color-text); }
+
+.order-tracking__terminal-actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-top: var(--space-5);
+}
+
+@media (min-width: 900px) {
+  .order-tracking__grid { grid-template-columns: 1.5fr 1fr; align-items: start; }
+  .order-tracking__panel--sticky { position: sticky; top: 90px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .order-tracking__panel { animation: none; }
+}

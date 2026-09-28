@@ -1,0 +1,73 @@
+.active-delivery-card {
+  background: var(--color-ink);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  margin-bottom: var(--space-8);
+  animation: rise-in var(--duration-base) var(--ease-out) both;
+}
+
+.active-delivery-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.active-delivery-card__id {
+  font-size: 0.78rem;
+  color: rgba(255, 250, 245, 0.6);
+  margin-bottom: 2px;
+}
+
+.active-delivery-card__restaurant {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.active-delivery-card__route {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-md);
+}
+
+.active-delivery-card__stop {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  font-size: 0.88rem;
+}
+
+.active-delivery-card__stop span {
+  display: block;
+  font-size: 0.72rem;
+  color: rgba(255, 250, 245, 0.55);
+}
+
+.active-delivery-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.active-delivery-card__eta {
+  font-size: 0.82rem;
+  color: rgba(255, 250, 245, 0.7);
+}
+
+.active-delivery-card__total {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .active-delivery-card { animation: none; }
+}

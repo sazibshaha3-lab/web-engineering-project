@@ -1,0 +1,118 @@
+/* =========================================================
+   CampusEats Design Tokens
+   A warm, appetite-driven palette built around mango orange
+   and basil green — grounded in campus food-market energy
+   rather than a generic SaaS or "AI" default palette.
+   ========================================================= */
+
+:root {
+  /* ---- Color: Brand ---- */
+  --color-primary: #f2622e;
+  --color-primary-dark: #cf4a1c;
+  --color-primary-light: #fde3d4;
+  --color-primary-tint: #fff1e8;
+
+  --color-secondary: #1f6b4d;
+  --color-secondary-dark: #164d38;
+  --color-secondary-light: #d9ece2;
+
+  --color-accent: #f4b942;
+  --color-accent-dark: #d99a1f;
+
+  /* ---- Color: Neutrals / surfaces ---- */
+  --color-background: #fbf8f4;
+  --color-background-alt: #f3ede4;
+  --color-surface: #ffffff;
+  --color-card: #ffffff;
+  --color-ink: #1e1a17;
+
+  --color-text: #221d1a;
+  --color-text-secondary: #6b5f56;
+  --color-text-muted: #9a8f85;
+  --color-text-inverse: #fffaf5;
+
+  --color-border: #e7ddd0;
+  --color-border-strong: #d6c8b8;
+
+  /* ---- Color: Semantic ---- */
+  --color-success: #2e7d4f;
+  --color-success-tint: #e5f3ea;
+  --color-warning: #c77a1e;
+  --color-warning-tint: #fbeeda;
+  --color-error: #c43d3d;
+  --color-error-tint: #fbe8e6;
+  --color-info: #2c6fa8;
+  --color-info-tint: #e4eef6;
+
+  /* ---- Color: Dashboard (dark ink surfaces for sidebars) ---- */
+  --color-sidebar-bg: #201b17;
+  --color-sidebar-bg-hover: #2c251f;
+  --color-sidebar-text: #cfc3b8;
+  --color-sidebar-text-active: #fffaf5;
+
+  /* ---- Typography ---- */
+  --font-display: "Fraunces", "Iowan Old Style", serif;
+  --font-body: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  --text-hero: 700 clamp(2.6rem, 4.2vw, 4.2rem) / 1.05 var(--font-display);
+  --text-h1: 600 clamp(2rem, 3vw, 2.75rem) / 1.12 var(--font-display);
+  --text-h2: 600 clamp(1.5rem, 2.2vw, 2rem) / 1.2 var(--font-display);
+  --text-h3: 600 1.25rem/1.3 var(--font-display);
+  --text-card-title: 600 1.05rem/1.35 var(--font-body);
+  --text-body: 400 1rem/1.6 var(--font-body);
+  --text-body-sm: 400 0.9rem/1.55 var(--font-body);
+  --text-label: 600 0.78rem/1 var(--font-body);
+  --text-button: 600 0.95rem/1 var(--font-body);
+  --text-nav: 500 0.95rem/1 var(--font-body);
+
+  /* ---- Spacing scale ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* ---- Radius ---- */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+
+  /* ---- Shadow ---- */
+  --shadow-sm: 0 1px 2px rgba(30, 22, 14, 0.06), 0 1px 1px rgba(30, 22, 14, 0.04);
+  --shadow-md: 0 6px 16px rgba(30, 22, 14, 0.08), 0 2px 6px rgba(30, 22, 14, 0.05);
+  --shadow-lg: 0 18px 40px rgba(30, 22, 14, 0.14), 0 6px 14px rgba(30, 22, 14, 0.06);
+  --shadow-card-hover: 0 20px 36px rgba(242, 98, 46, 0.16), 0 8px 16px rgba(30, 22, 14, 0.08);
+
+  /* ---- Motion ---- */
+  --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 140ms;
+  --duration-base: 220ms;
+  --duration-slow: 420ms;
+
+  /* ---- Layout ---- */
+  --container-max: 1240px;
+  --sidebar-width: 264px;
+  --sidebar-width-collapsed: 84px;
+  --topbar-height: 72px;
+  --z-nav: 100;
+  --z-modal: 500;
+  --z-toast: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+  }
+}
