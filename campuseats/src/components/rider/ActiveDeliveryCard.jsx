@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { Store, MapPin, Clock } from "lucide-react";
 import DeliveryActionButtons from "./DeliveryActionButtons";
-import { currentCustomer } from "../../data/users";
 import "./ActiveDeliveryCard.css";
 
 export default function ActiveDeliveryCard({ order, restaurant }) {
@@ -29,7 +28,7 @@ export default function ActiveDeliveryCard({ order, restaurant }) {
           <MapPin size={16} strokeWidth={2} />
           <div>
             <span>Deliver to</span>
-            {order.deliveryAddress?.label} · {currentCustomer.name}
+            {order.deliveryAddress?.label} · {order.customer?.name || "Customer"}
           </div>
         </div>
       </div>

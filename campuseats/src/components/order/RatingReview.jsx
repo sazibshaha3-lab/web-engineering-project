@@ -34,17 +34,25 @@ export default function RatingReview({ order }) {
   const [foodRating, setFoodRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
   const [submitted, setSubmitted] = useState(Boolean(order.review));
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    if (restaurantRating === 0) return;
-    submitReview(order.id, {
+    if (restaurantRating === 0 || saving) return;
+    setSaving(true);
+    setError("");
+    const result = await submitReview(order.id, {
       restaurantRating,
       foodRating,
       text: reviewText,
-      submittedAt: new Date().toISOString(),
     });
-    setSubmitted(true);
+    setSaving(false);
+    if (result.success) {
+      setSubmitted(true);
+    } else {
+      setError(result.message);
+    }
   }
 
   if (submitted) {
@@ -74,7 +82,8 @@ export default function RatingReview({ order }) {
           onChange={(e) => setReviewText(e.target.value)}
         />
       </div>
-      <Button type="submit" disabled={restaurantRating === 0}>
+      {error && <p style={{ color: "var(--color-danger, #c0392b)", fontSize: "0.88rem", marginBottom: 8 }}>{error}</p>}
+      <Button type="submit" loading={saving} disabled={restaurantRating === 0}>
         Submit Review
       </Button>
     </form>

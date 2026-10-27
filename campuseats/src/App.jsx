@@ -9,6 +9,7 @@ import { OrderProvider } from "./context/OrderContext";
 import { RestaurantDataProvider } from "./context/RestaurantContext";
 import { RiderProvider } from "./context/RiderContext";
 import { AdminProvider } from "./context/AdminContext";
+import { ThemeProvider } from "./context/ThemeContext";
 
 import RequireCustomerAuth from "./components/auth/RequireCustomerAuth";
 import RequireRestaurantRole from "./components/auth/RequireRestaurantRole";
@@ -26,6 +27,7 @@ import Login from "./pages/public/Login";
 import Register from "./pages/public/Register";
 import VerifyOtp from "./pages/public/VerifyOtp";
 import NotFound from "./pages/public/NotFound";
+import CompanyPage from "./pages/public/CompanyPage";
 
 import CustomerHome from "./pages/customer/CustomerHome";
 import Restaurants from "./pages/customer/Restaurants";
@@ -44,12 +46,14 @@ import RestaurantMenu from "./pages/restaurant/RestaurantMenu";
 import RestaurantOrders from "./pages/restaurant/RestaurantOrders";
 import RestaurantOrderDetails from "./pages/restaurant/RestaurantOrderDetails";
 import RestaurantProfile from "./pages/restaurant/RestaurantProfile";
+import RestaurantApprovalPending from "./pages/restaurant/RestaurantApprovalPending";
 
 import RiderDashboard from "./pages/rider/RiderDashboard";
 import RiderDeliveries from "./pages/rider/RiderDeliveries";
 import RiderDeliveryDetails from "./pages/rider/RiderDeliveryDetails";
 import RiderHistory from "./pages/rider/RiderHistory";
 import RiderProfile from "./pages/rider/RiderProfile";
+import RiderApprovalPending from "./pages/rider/RiderApprovalPending";
 
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminOrders from "./pages/admin/AdminOrders";
@@ -64,11 +68,12 @@ import AdminProfile from "./pages/admin/AdminProfile";
 
 export default function App() {
   return (
+    <ThemeProvider>
     <AuthProvider>
-      <LocationProvider>
-        <AddressProvider>
-          <RestaurantDataProvider>
-            <ToastProvider>
+      <AddressProvider>
+        <LocationProvider>
+          <ToastProvider>
+            <RestaurantDataProvider>
               <CartProvider>
                 <OrderProvider>
                   <RiderProvider>
@@ -81,6 +86,11 @@ export default function App() {
                             <Route path="/login" element={<Login />} />
                             <Route path="/register" element={<Register />} />
                             <Route path="/verify-otp" element={<VerifyOtp />} />
+                            <Route path="/about" element={<CompanyPage page="about" />} />
+                            <Route path="/careers" element={<CompanyPage page="careers" />} />
+                            <Route path="/help" element={<CompanyPage page="help" />} />
+                            <Route path="/terms" element={<CompanyPage page="terms" />} />
+                            <Route path="/privacy" element={<CompanyPage page="privacy" />} />
                           </Route>
 
                           <Route path="/customer" element={<CustomerLayout />}>
@@ -98,8 +108,8 @@ export default function App() {
                               <Route path="orders/:orderId/track" element={<OrderTracking />} />
                               <Route path="order-success" element={<OrderSuccess />} />
                               <Route path="profile" element={<Profile />} />
-                              <Route path="locations" element={<Locations />} />
                             </Route>
+                            <Route path="locations" element={<Locations />} />
                           </Route>
 
                           <Route element={<RequireRestaurantRole />}>
@@ -111,6 +121,7 @@ export default function App() {
                               <Route path="orders/:orderId" element={<RestaurantOrderDetails />} />
                             </Route>
                           </Route>
+                          <Route path="/restaurant/pending" element={<RestaurantApprovalPending />} />
 
                           <Route element={<RequireRiderRole />}>
                             <Route path="/rider" element={<RiderLayout />}>
@@ -121,6 +132,7 @@ export default function App() {
                               <Route path="history" element={<RiderHistory />} />
                             </Route>
                           </Route>
+                          <Route path="/rider/pending" element={<RiderApprovalPending />} />
 
                           <Route element={<RequireAdminRole />}>
                             <Route path="/admin" element={<AdminLayout />}>
@@ -144,10 +156,11 @@ export default function App() {
                   </RiderProvider>
                 </OrderProvider>
               </CartProvider>
-            </ToastProvider>
-          </RestaurantDataProvider>
-        </AddressProvider>
-      </LocationProvider>
+            </RestaurantDataProvider>
+          </ToastProvider>
+        </LocationProvider>
+      </AddressProvider>
     </AuthProvider>
+    </ThemeProvider>
   );
 }

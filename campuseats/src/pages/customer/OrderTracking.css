@@ -1,88 +1,685 @@
-.order-tracking__header {
+/* ==========================================================================
+   OrderTracking.css — Mobile-first redesign
+   Uses CampusEats design tokens from tokens.css
+   ========================================================================== */
+
+/* ─────────────────────────────────────────────
+   Root / page wrapper
+   ───────────────────────────────────────────── */
+.ot-root {
+  padding-bottom: var(--space-12);
+}
+
+/* ─────────────────────────────────────────────
+   Top navigation row
+   ───────────────────────────────────────────── */
+.ot-topnav {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
 }
 
-.order-tracking__back {
+.ot-topnav__back {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-2);
+  font: var(--text-label);
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--color-text-secondary);
+  text-decoration: none;
+  min-height: 44px;           /* touch target */
+  padding: var(--space-2) 0;
+  transition: color var(--duration-fast) var(--ease-standard);
 }
 
-.order-tracking__title {
-  font: var(--text-h2);
-  margin-bottom: var(--space-6);
+.ot-topnav__back:hover,
+.ot-topnav__back:focus-visible {
+  color: var(--color-primary);
 }
 
-.order-tracking__grid {
-  display: grid;
-  gap: var(--space-6);
-}
-
-.order-tracking__panel {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  margin-bottom: var(--space-6);
-  animation: rise-in var(--duration-base) var(--ease-out) both;
-}
-
-.order-tracking__panel-title {
-  font: var(--text-card-title);
-  font-size: 1.02rem;
+/* ─────────────────────────────────────────────
+   Page heading
+   ───────────────────────────────────────────── */
+.ot-heading {
   margin-bottom: var(--space-5);
 }
 
-.order-tracking__eta {
+.ot-heading__number {
+  font: var(--text-h2);
+  margin-bottom: var(--space-2);
+  word-break: break-all;
+}
+
+.ot-heading__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.ot-heading__restaurant {
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.ot-heading__date {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ─────────────────────────────────────────────
+   ETA chip
+   ───────────────────────────────────────────── */
+.ot-eta {
   display: flex;
   align-items: center;
   gap: var(--space-3);
   background: var(--color-primary-tint);
   color: var(--color-primary-dark, var(--color-primary));
   border-radius: var(--radius-md);
-  padding: var(--space-4);
-  margin-bottom: var(--space-5);
-  font-weight: 700;
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-4);
+  animation: rise-in var(--duration-slow) var(--ease-out) both;
 }
 
-.order-tracking__eta span {
+.ot-eta__eyebrow {
   display: block;
   font-size: 0.72rem;
   font-weight: 600;
-  opacity: 0.8;
+  opacity: 0.75;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-.order-tracking__info-row {
+.ot-eta__value {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+/* ─────────────────────────────────────────────
+   Status banner
+   ───────────────────────────────────────────── */
+.ot-banner {
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-5);
+  font-weight: 700;
+  font-size: 0.9rem;
+  animation: rise-in var(--duration-slow) var(--ease-out) both;
+}
+
+.ot-banner--info    { background: var(--color-info-tint);    color: var(--color-info); }
+.ot-banner--warning { background: var(--color-warning-tint); color: var(--color-warning); }
+.ot-banner--success { background: var(--color-success-tint); color: var(--color-success); }
+.ot-banner--error   { background: var(--color-error-tint);   color: var(--color-error); }
+.ot-banner--neutral { background: var(--color-background-alt); color: var(--color-text-secondary); }
+
+/* ─────────────────────────────────────────────
+   Skeleton grid
+   ───────────────────────────────────────────── */
+.ot-skeleton-grid {
+  display: grid;
+  gap: var(--space-5);
+}
+
+/* ─────────────────────────────────────────────
+   Two-column grid (collapses on mobile)
+   ───────────────────────────────────────────── */
+.ot-grid {
+  display: grid;
+  gap: var(--space-5);
+  align-items: start;
+}
+
+/* ─────────────────────────────────────────────
+   Panel (card) base
+   ───────────────────────────────────────────── */
+.ot-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin-bottom: var(--space-5);
+  box-shadow: var(--shadow-sm);
+}
+
+.ot-panel:last-child { margin-bottom: 0; }
+
+.ot-panel__title {
+  font: var(--text-card-title);
+  font-size: 1rem;
+  color: var(--color-text);
+  margin-bottom: var(--space-5);
+}
+
+/* ─────────────────────────────────────────────
+   PROGRESS TRACKER
+   Mobile: vertical (column); ≥640px: horizontal
+   ───────────────────────────────────────────── */
+.ot-tracker {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  /* Mobile: vertical column */
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Step item ── */
+.ot-tracker__step {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding-bottom: var(--space-6);
+}
+
+.ot-tracker__step:last-child {
+  padding-bottom: 0;
+}
+
+/* ── Vertical connector line (mobile) ── */
+.ot-tracker__line {
+  position: absolute;
+  left: 18px;          /* center of 36px bubble */
+  top: -12px;          /* bridge from previous step's bubble */
+  width: 2px;
+  height: 12px;
+  background: var(--color-border);
+  transition: background-color var(--duration-slow) var(--ease-out);
+}
+
+.ot-tracker__line.is-filled {
+  background: var(--color-success);
+}
+
+/* ── Bubble ── */
+.ot-tracker__bubble {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  z-index: 1;
+
+  background: var(--color-background-alt);
+  color: var(--color-text-muted);
+
+  transition:
+    background-color var(--duration-base) var(--ease-out),
+    color            var(--duration-base) var(--ease-out),
+    transform        var(--duration-base) var(--ease-out),
+    box-shadow       var(--duration-base) var(--ease-out);
+}
+
+/* Step: after connector — the long vertical line downward */
+.ot-tracker__step:not(:last-child) .ot-tracker__bubble::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: calc(100% + 0px);
+  width: 2px;
+  height: var(--space-6);
+  background: var(--color-border);
+  transition: background-color var(--duration-slow) var(--ease-out);
+}
+
+.ot-tracker__step.is-completed:not(:last-child) .ot-tracker__bubble::after {
+  background: var(--color-success);
+}
+
+/* Completed state */
+.ot-tracker__step.is-completed .ot-tracker__bubble {
+  background: var(--color-success);
+  color: #fff;
+  /* Scale+fade-in when step becomes done */
+  animation: ot-step-complete 360ms var(--ease-out) both;
+}
+
+/* Current state */
+.ot-tracker__step.is-current .ot-tracker__bubble {
+  background: var(--color-primary);
+  color: #fff;
+  transform: scale(1.1);
+  box-shadow: 0 0 0 4px var(--color-primary-light);
+  /* Infinite pulse while active */
+  animation: ot-pulse 1.8s ease-in-out infinite;
+}
+
+/* Pulse ring on current step */
+.ot-tracker__step.is-current .ot-tracker__bubble::before {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 2px solid var(--color-primary);
+  animation: ot-ring-expand 1.8s ease-out infinite;
+}
+
+/* ── Moving delivery icon (OUT_FOR_DELIVERY current step) ── */
+.ot-tracker__moving-icon {
+  display: inline-flex;
+  animation: ot-slide-back-forth 1.4s ease-in-out infinite alternate;
+}
+
+/* ── Step label (mobile: beside bubble) ── */
+.ot-tracker__label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 7px;
+}
+
+.ot-tracker__label-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  transition: color var(--duration-base) var(--ease-out);
+  line-height: 1.2;
+}
+
+.ot-tracker__step.is-completed .ot-tracker__label-title,
+.ot-tracker__step.is-current   .ot-tracker__label-title {
+  color: var(--color-text);
+}
+
+.ot-tracker__label-desc {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  line-height: 1.3;
+}
+
+/* ─────────────────────────────────────────────
+   Terminal status box (rejected / cancelled)
+   ───────────────────────────────────────────── */
+.ot-terminal {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  background: var(--color-error-tint);
+  color: var(--color-error);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  margin-bottom: var(--space-4);
+}
+
+.ot-terminal__icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-error);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.ot-terminal__heading {
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+}
+
+.ot-terminal__body {
+  font-size: 0.85rem;
+  opacity: 0.85;
+  line-height: 1.5;
+}
+
+.ot-terminal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+/* ─────────────────────────────────────────────
+   Rider card
+   ───────────────────────────────────────────── */
+.ot-rider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5) var(--space-6);
+  margin-bottom: var(--space-5);
+  box-shadow: var(--shadow-sm);
+}
+
+.ot-rider__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark, var(--color-primary));
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.ot-rider__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ot-rider__label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.ot-rider__name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ot-rider__call {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-primary-tint);
+  color: var(--color-primary);
+  text-decoration: none;
+  flex-shrink: 0;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
+}
+
+.ot-rider__call:hover,
+.ot-rider__call:focus-visible {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* ─────────────────────────────────────────────
+   Delivery address block
+   ───────────────────────────────────────────── */
+.ot-address {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.ot-address__icon {
+  color: var(--color-primary);
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.ot-address__label {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  margin-bottom: 2px;
+}
+
+.ot-address__line {
   font-size: 0.88rem;
   color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.ot-address__area {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  margin-top: 1px;
+}
+
+/* ─────────────────────────────────────────────
+   Info rows
+   ───────────────────────────────────────────── */
+.ot-info-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
   padding: var(--space-2) 0;
+  font-size: 0.88rem;
   border-bottom: 1px solid var(--color-border);
 }
 
-.order-tracking__info-row:last-child { border-bottom: none; }
-.order-tracking__info-row strong { color: var(--color-text); }
+.ot-info-row:last-of-type {
+  border-bottom: none;
+}
 
-.order-tracking__terminal-actions {
-  display: flex;
-  gap: var(--space-3);
-  flex-wrap: wrap;
+.ot-info-row__label {
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.ot-info-row__value {
+  font-weight: 600;
+  color: var(--color-text);
+  text-align: right;
+}
+
+/* ─────────────────────────────────────────────
+   Divider
+   ───────────────────────────────────────────── */
+.ot-divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: var(--space-4) 0;
+}
+
+/* ─────────────────────────────────────────────
+   Side column actions
+   ───────────────────────────────────────────── */
+.ot-side-actions {
   margin-top: var(--space-5);
 }
 
-@media (min-width: 900px) {
-  .order-tracking__grid { grid-template-columns: 1.5fr 1fr; align-items: start; }
-  .order-tracking__panel--sticky { position: sticky; top: 90px; }
+/* ─────────────────────────────────────────────
+   ANIMATIONS
+   ───────────────────────────────────────────── */
+
+/* Step completion: scale + fade-in */
+@keyframes ot-step-complete {
+  0%   { transform: scale(0.7); opacity: 0; }
+  60%  { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1);    opacity: 1; }
 }
 
+/* Current step: subtle pulse (infinite) */
+@keyframes ot-pulse {
+  0%, 100% { transform: scale(1.1);  box-shadow: 0 0 0 4px var(--color-primary-light); }
+  50%       { transform: scale(1.14); box-shadow: 0 0 0 7px var(--color-primary-tint); }
+}
+
+/* Current step ring expand (infinite) */
+@keyframes ot-ring-expand {
+  0%   { transform: scale(0.9); opacity: 0.8; }
+  100% { transform: scale(1.4); opacity: 0;   }
+}
+
+/* Moving delivery icon (OUT_FOR_DELIVERY): gentle slide */
+@keyframes ot-slide-back-forth {
+  0%   { transform: translateX(-3px); }
+  100% { transform: translateX(3px);  }
+}
+
+/* ─────────────────────────────────────────────
+   RESPONSIVE — ≥ 640px: HORIZONTAL tracker
+   ───────────────────────────────────────────── */
+@media (min-width: 640px) {
+  .ot-tracker {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0;
+    width: 100%;
+    overflow: visible;
+    padding-bottom: 0;
+  }
+
+  .ot-tracker__step {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-bottom: 0;
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Remove vertical after-connector on wide screens */
+  .ot-tracker__step .ot-tracker__bubble::after {
+    display: none;
+  }
+
+  /* Horizontal connector line between steps */
+  .ot-tracker__line {
+    /* Reset from absolute vertical positioning */
+    position: static;
+    display: block;
+    width: 100%;
+    height: 2px;
+    /* Sit at the vertical midpoint of the bubble (18px from top of step) */
+    align-self: center;
+    margin-top: 0;
+    /* Overlap: pull in to connect bubble edges */
+    margin-left: -2px;
+    margin-right: -2px;
+    order: -1;
+  }
+
+  /* Restructure step so line and bubble sit in the same row */
+  .ot-tracker__step {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    align-items: center;
+    text-align: left;
+  }
+
+  /* Actually — simplest reliable horizontal approach: */
+  /* Use flexbox with line between bubble and label on the same axis */
+  .ot-tracker {
+    flex-direction: row;
+  }
+
+  .ot-tracker__step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-bottom: 0;
+    flex: 1;
+    position: relative;
+    min-width: 0;
+  }
+
+  /* Horizontal line drawn as ::before on every step after the first */
+  .ot-tracker__step:not(:first-child)::before {
+    content: "";
+    position: absolute;
+    top: 18px;            /* half of 36px bubble */
+    right: calc(50% + 18px);
+    left: -50%;
+    height: 2px;
+    background: var(--color-border);
+    transition: background-color var(--duration-slow) var(--ease-out);
+    z-index: 0;
+  }
+
+  .ot-tracker__step.is-completed:not(:first-child)::before,
+  .ot-tracker__step.is-current:not(:first-child)::before {
+    background: var(--color-success);
+  }
+
+  /* Hide the separate line span on wide screens */
+  .ot-tracker__line {
+    display: none;
+  }
+
+  .ot-tracker__label {
+    padding-top: var(--space-2);
+    align-items: center;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .ot-tracker__label-title {
+    font-size: 0.78rem;
+  }
+
+  .ot-tracker__label-desc {
+    font-size: 0.72rem;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   RESPONSIVE — ≥ 900px: two-column layout
+   ───────────────────────────────────────────── */
+@media (min-width: 900px) {
+  .ot-grid {
+    grid-template-columns: 1.5fr 1fr;
+  }
+
+  .ot-skeleton-grid {
+    grid-template-columns: 1.5fr 1fr;
+  }
+
+  .ot-panel--sticky {
+    position: sticky;
+    top: calc(var(--topbar-height) + var(--space-6));
+  }
+}
+
+/* ─────────────────────────────────────────────
+   REDUCED MOTION — disable all animations
+   ───────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .order-tracking__panel { animation: none; }
+  .ot-tracker__step.is-completed .ot-tracker__bubble {
+    animation: none;
+  }
+
+  .ot-tracker__step.is-current .ot-tracker__bubble {
+    animation: none;
+    box-shadow: 0 0 0 4px var(--color-primary-light);
+  }
+
+  .ot-tracker__step.is-current .ot-tracker__bubble::before {
+    animation: none;
+    display: none;
+  }
+
+  .ot-tracker__moving-icon {
+    animation: none;
+  }
+
+  .ot-eta,
+  .ot-banner,
+  .ot-panel,
+  .ot-terminal,
+  .ot-rider {
+    animation: none;
+  }
 }

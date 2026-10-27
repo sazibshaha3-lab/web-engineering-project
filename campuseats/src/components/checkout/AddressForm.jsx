@@ -6,8 +6,8 @@ import Select from "../forms/Select";
 import Textarea from "../forms/Textarea";
 import Button from "../common/Button";
 import useMediaQuery from "../../hooks/useMediaQuery";
-import { addressLabels } from "../../data/addresses";
 
+const addressLabels = ["Home", "Hostel", "University", "Mess", "Other"];
 const emptyForm = { label: "Home", line: "", area: "", city: "", details: "" };
 
 export default function AddressForm({ open, onClose, onSave, initialAddress }) {
@@ -56,6 +56,14 @@ export default function AddressForm({ open, onClose, onSave, initialAddress }) {
         value={form.label}
         onChange={(e) => update("label", e.target.value)}
       />
+      <label style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--color-text-secondary)" }}>
+        <input
+          type="checkbox"
+          checked={Boolean(form.isDefault)}
+          onChange={(e) => update("isDefault", e.target.checked)}
+        />
+        Make this my default address
+      </label>
       <Input
         label="Address line"
         placeholder="e.g. Hostel Block C, Room 214"

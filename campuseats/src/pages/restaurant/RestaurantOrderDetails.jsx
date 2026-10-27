@@ -11,7 +11,6 @@ import OrderActionButtons from "../../components/restaurant/OrderActionButtons";
 import { useOrders } from "../../context/OrderContext";
 import { useRestaurantData } from "../../context/RestaurantContext";
 import { liveOrderStatusMap } from "../../utils/statusMaps";
-import { currentCustomer } from "../../data/users";
 import "./RestaurantOrderDetails.css";
 
 export default function RestaurantOrderDetails() {
@@ -55,7 +54,7 @@ export default function RestaurantOrderDetails() {
             <h3>Customer</h3>
             <p className="rorder-details__customer">
               <User size={14} style={{ verticalAlign: "-2px", marginRight: 6 }} />
-              <strong>{currentCustomer.name}</strong>
+              <strong>{order.customer?.name || "Customer"}</strong>
             </p>
             <DeliveryInfo
               address={order.deliveryAddress}

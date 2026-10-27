@@ -1,21 +1,20 @@
-import { createContext, useContext, useMemo, useState } from "react";
-import { savedLocations as initialLocations } from "../data/locations";
+import { createContext, useContext, useMemo } from "react";
+import { useAddresses } from "./AddressContext";
 
 const LocationContext = createContext(null);
 
 export function LocationProvider({ children }) {
-  const [locations, setLocations] = useState(initialLocations);
-  const [selected, setSelected] = useState(initialLocations.find((l) => l.isDefault) || initialLocations[0]);
-
-  function addLocation(label) {
-    const loc = { id: `l${Date.now()}`, label, isDefault: false };
-    setLocations((prev) => [...prev, loc]);
-    return loc;
-  }
+  const { addresses, selectedAddress, selectAddress, isLoading, loadError } = useAddresses();
 
   const value = useMemo(
-    () => ({ locations, selected, setSelected, addLocation }),
-    [locations, selected]
+    () => ({
+      locations: addresses,
+      selected: selectedAddress,
+      setSelected: (address) => selectAddress(address?.id),
+      isLoading,
+      loadError,
+    }),
+    [addresses, selectedAddress, selectAddress, isLoading, loadError]
   );
 
   return <LocationContext.Provider value={value}>{children}</LocationContext.Provider>;

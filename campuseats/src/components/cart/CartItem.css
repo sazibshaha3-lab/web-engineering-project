@@ -76,12 +76,19 @@
   display: grid;
   place-items: center;
   color: var(--color-text-muted);
-  transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+  transition: background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    transform 160ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .cart-item-row__remove:hover {
   background: var(--color-error-tint);
   color: var(--color-error);
+  transform: scale(1.15) rotate(-8deg);
+}
+
+.cart-item-row__remove:active {
+  transform: scale(0.9);
 }
 
 @media (max-width: 560px) {

@@ -32,8 +32,8 @@ export default function AdminOrderStatusControl({ order }) {
 
   function handleAdvance() {
     setConfirmNext(false);
-    run("advance", () => {
-      const result = updateOrderStatus(order.id, next.status);
+    run("advance", async () => {
+      const result = await updateOrderStatus(order.id, next.status);
       toast?.showToast(
         result.success ? `Order updated to ${next.status.replace(/_/g, " ").toLowerCase()}.` : "That status change is no longer valid.",
         result.success ? "success" : "error"
@@ -43,10 +43,10 @@ export default function AdminOrderStatusControl({ order }) {
 
   function handleCancel() {
     setConfirmCancel(false);
-    run("cancel", () => {
-      const result = cancelOrder(order.id);
+    run("cancel", async () => {
+      const result = await cancelOrder(order.id);
       toast?.showToast(
-        result.success ? "Order cancelled." : "This order can no longer be cancelled.",
+        result.success ? "Order cancelled." : result.message || "This order can no longer be cancelled.",
         result.success ? "success" : "error"
       );
     });
@@ -54,9 +54,12 @@ export default function AdminOrderStatusControl({ order }) {
 
   function handleReject() {
     setConfirmReject(false);
-    run("reject", () => {
-      const result = updateOrderStatus(order.id, "REJECTED");
-      toast?.showToast(result.success ? "Order rejected." : "This order can no longer be rejected.", result.success ? "success" : "error");
+    run("reject", async () => {
+      const result = await updateOrderStatus(order.id, "REJECTED");
+      toast?.showToast(
+        result.success ? "Order rejected." : result.message || "This order can no longer be rejected.",
+        result.success ? "success" : "error"
+      );
     });
   }
 

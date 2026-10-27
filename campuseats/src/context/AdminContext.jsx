@@ -15,7 +15,7 @@ const AdminContext = createContext(null);
 // call one `useAdmin()` hook instead of wiring up four contexts each.
 export function AdminProvider({ children }) {
   const { customers, blockCustomer, unblockCustomer } = useAuth();
-  const { orders, updateOrderStatus, getOrderById, cancelOrder } = useOrders();
+  const { orders, ordersLoading, reload: reloadOrders, updateOrderStatus, getOrderById, cancelOrder } = useOrders();
   const {
     allRestaurants,
     foods,
@@ -65,6 +65,8 @@ export function AdminProvider({ children }) {
     // Read-through data (still owned by their original contexts).
     customers,
     orders,
+    ordersLoading,
+    reloadOrders,
     allRestaurants,
     foods,
     riders,

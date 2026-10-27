@@ -21,14 +21,16 @@ const PasswordInput = forwardRef(function PasswordInput(
         <input
           ref={ref}
           id={inputId}
-          type={visible ? "text" : "password"}
-          className="field__input"
           {...rest}
+          className="field__input"
+          type={visible ? "text" : "password"}
         />
         <button
           type="button"
           onClick={() => setVisible((v) => !v)}
           aria-label={visible ? "Hide password" : "Show password"}
+          aria-pressed={visible}
+          title={visible ? "Hide password" : "Show password"}
           style={{ color: "var(--color-text-muted)", display: "flex", flexShrink: 0 }}
         >
           {visible ? <EyeOff size={17} strokeWidth={2} /> : <Eye size={17} strokeWidth={2} />}

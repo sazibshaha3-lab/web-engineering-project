@@ -1,14 +1,21 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { MapPin, Search, ArrowRight } from "lucide-react";
+import Button from "../common/Button";
 import "./SearchBar.css";
 
 export default function SearchBar({ variant = "hero" }) {
+  const navigate = useNavigate();
   const [location, setLocation] = useState("");
   const [query, setQuery] = useState("");
 
   function handleSubmit(e) {
     e.preventDefault();
-    // UI only — wired up in a later step.
+    const params = new URLSearchParams();
+    if (query.trim()) params.set("q", query.trim());
+    if (location.trim()) params.set("location", location.trim());
+    const search = params.toString();
+    navigate(`/customer/restaurants${search ? `?${search}` : ""}`);
   }
 
   return (
@@ -34,10 +41,17 @@ export default function SearchBar({ variant = "hero" }) {
           aria-label="Search food or restaurants"
         />
       </div>
-      <button type="submit" className="search-bar__submit" aria-label="Search">
-        <span>Find food</span>
-        <ArrowRight size={17} strokeWidth={2.2} />
-      </button>
+      <Button
+        type="submit"
+        variant="primary"
+        size="md"
+        icon={ArrowRight}
+        iconPosition="right"
+        className="search-bar__submit"
+        aria-label="Search"
+      >
+        Find food
+      </Button>
     </form>
   );
 }

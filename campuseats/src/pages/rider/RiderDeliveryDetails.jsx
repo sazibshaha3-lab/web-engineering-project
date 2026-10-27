@@ -58,7 +58,7 @@ export default function RiderDeliveryDetails() {
 
           <div className="rdd__panel">
             <h3>Customer delivery</h3>
-            <CustomerDeliveryInfo address={order.deliveryAddress} instructions={order.deliveryInstructions} />
+            <CustomerDeliveryInfo address={order.deliveryAddress} instructions={order.deliveryInstructions} customer={order.customer} />
           </div>
 
           <div className="rdd__panel">

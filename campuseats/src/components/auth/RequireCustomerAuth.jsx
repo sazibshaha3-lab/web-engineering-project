@@ -7,8 +7,10 @@ import { useAuth } from "../../context/AuthContext";
 // locations — require an explicit customer login. Redirects to /login
 // and remembers where to send the person back afterwards.
 export default function RequireCustomerAuth() {
-  const { user } = useAuth();
+  const { user, authLoading } = useAuth();
   const location = useLocation();
+
+  if (authLoading) return null;
 
   if (!user || user.role !== "customer") {
     return <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}` }} />;

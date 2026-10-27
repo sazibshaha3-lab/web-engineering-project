@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import Navbar from "../components/navigation/Navbar";
 import Footer from "../components/navigation/Footer";
+import FloatingActions from "../components/navigation/FloatingActions";
 
 export default function PublicLayout() {
   return (
@@ -10,6 +11,7 @@ export default function PublicLayout() {
       <main id="main-content">
         <Outlet />
       </main>
+      <FloatingActions />
       <Footer />
     </>
   );

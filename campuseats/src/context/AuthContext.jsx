@@ -1,25 +1,21 @@
-import { createContext, useContext, useMemo, useState } from "react";
-import { customerAccounts as seedCustomerAccounts } from "../data/users";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import api, { apiErrorMessage, getToken, setToken } from "../services/api";
+import { normalizeCustomer } from "../services/peopleApi";
 
 const AuthContext = createContext(null);
+const PENDING_SIGNUP_KEY = "campuseats_pending_signup";
 
-const DEMO_EMAIL = "demo@campuseats.test";
-const DEMO_PASSWORD = "Demo123!";
-const DEMO_OTP = "123456";
+function readPendingSignup() {
+  try {
+    return JSON.parse(sessionStorage.getItem(PENDING_SIGNUP_KEY) || "null");
+  } catch {
+    return null;
+  }
+}
 
-const RESTAURANT_EMAIL = "restaurant@campuseats.test";
-const RESTAURANT_PASSWORD = "Restaurant123!";
-
-const RIDER_EMAIL = "rider@campuseats.test";
-const RIDER_PASSWORD = "Rider123!";
-
-const ADMIN_EMAIL = "admin@campuseats.test";
-const ADMIN_PASSWORD = "Admin123!";
-
-// The live demo customer's account row in the shared customer registry
-// (data/users.js -> customerAccounts). Used to gate login when Admin
-// blocks this account.
-const DEMO_CUSTOMER_ID = "u1";
+// Backend role -> frontend role
+const ROLE_MAP = { restaurant_owner: "restaurant" };
+const toFrontendUser = (u) => ({ ...u, role: ROLE_MAP[u.role] ?? u.role });
 
 function maskEmail(email) {
   const [name, domain] = email.split("@");
@@ -36,60 +32,154 @@ function maskPhone(phone) {
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [pendingSignup, setPendingSignup] = useState(null);
-  // Customer account registry — single source of truth for both the
-  // Admin Customers panel and login-time block enforcement. Nothing
-  // else in the app should keep its own copy of this list.
-  const [customers, setCustomers] = useState(seedCustomerAccounts);
+  const [authLoading, setAuthLoading] = useState(() => Boolean(getToken()));
+  const [pendingSignup, setPendingSignup] = useState(readPendingSignup);
+  // Admin Customers panel: real list from /admin/customers (loaded when an admin is logged in)
+  const [customers, setCustomers] = useState([]);
 
-  function loginMock(email, password) {
-    const normalizedEmail = email.trim().toLowerCase();
+  // Restore the session after a page refresh when a token exists
+  useEffect(() => {
+    if (!getToken()) return;
+    let cancelled = false;
+    api
+      .get("/me")
+      .then(({ data }) => {
+        if (!cancelled) setUser(toFrontendUser(data));
+      })
+      .catch(() => setToken(null))
+      .finally(() => {
+        if (!cancelled) setAuthLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-    if (normalizedEmail === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      setUser({ name: "Platform Admin", email: ADMIN_EMAIL, role: "admin", phone: "+880 1XXX-XXXXXX" });
-      return { success: true, role: "admin" };
+  // Auto logout when the token expires or is revoked (401)
+  useEffect(() => {
+    const onExpired = () => setUser(null);
+    window.addEventListener("auth:expired", onExpired);
+    return () => window.removeEventListener("auth:expired", onExpired);
+  }, []);
+
+  // Admin: customers list
+  const isAdmin = user?.role === "admin";
+  useEffect(() => {
+    if (!isAdmin) {
+      setCustomers([]);
+      return;
     }
+    let cancelled = false;
+    api
+      .get("/admin/customers")
+      .then(({ data }) => !cancelled && setCustomers(data.map(normalizeCustomer)))
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdmin]);
 
-    if (normalizedEmail === RESTAURANT_EMAIL && password === RESTAURANT_PASSWORD) {
-      setUser({ name: "Campus Grill House", email: RESTAURANT_EMAIL, role: "restaurant" });
-      return { success: true, role: "restaurant" };
+  // Re-fetch /me so the user (and their rider/restaurant record) is fresh, e.g. a rider's totalDeliveries
+  const refreshUser = useCallback(async () => {
+    try {
+      const { data } = await api.get("/me");
+      setUser(toFrontendUser(data));
+    } catch {
+      // ignore: on 401 the interceptor logs the user out
     }
+  }, []);
 
-    if (normalizedEmail === RIDER_EMAIL && password === RIDER_PASSWORD) {
-      setUser({ name: "Rahim Ahmed", email: RIDER_EMAIL, role: "rider" });
-      return { success: true, role: "rider" };
+  const updateProfile = useCallback(async (patch) => {
+    try {
+      const { data } = await api.put("/me", { name: patch.name, phone: patch.phone });
+      setUser(toFrontendUser(data));
+      return { success: true };
+    } catch (err) {
+      return { success: false, message: apiErrorMessage(err, "Could not update your profile.") };
     }
+  }, []);
 
-    if (normalizedEmail === DEMO_EMAIL && password === DEMO_PASSWORD) {
-      const account = customers.find((c) => c.id === DEMO_CUSTOMER_ID);
-      if (account?.status === "blocked") {
-        return { success: false, message: "This account has been blocked. Contact CampusEats support for help." };
-      }
-      setUser({ name: account?.name || "Alex", email: DEMO_EMAIL, role: "customer" });
-      return { success: true, role: "customer" };
+  async function loginMock(email, password) {
+    try {
+      const { data } = await api.post("/login", { email: email.trim().toLowerCase(), password });
+      setToken(data.token);
+      const u = toFrontendUser(data.user);
+      setUser(u);
+      return { success: true, role: u.role };
+    } catch (err) {
+      return { success: false, message: apiErrorMessage(err, "Invalid email or password.") };
     }
-
-    return { success: false, message: "Invalid email or password." };
   }
 
-  function startRegistration({ name, email, phone }) {
-    setPendingSignup({
-      name,
+  const loginWithGoogle = useCallback(async (credential) => {
+    try {
+      const { data } = await api.post("/login/google", { credential });
+      setToken(data.token);
+      const u = toFrontendUser(data.user);
+      setUser(u);
+      return { success: true, role: u.role };
+    } catch (err) {
+      return { success: false, message: apiErrorMessage(err, "Google sign-in failed. Please try again.") };
+    }
+  }, []);
+
+  async function startRegistration({
+    name, email, phone, password, role = "customer", restaurantName,
+    restaurantAddress, vehicleType, vehicleNumber, adminInviteCode,
+  }) {
+    const normalizedEmail = email.trim().toLowerCase();
+    try {
+      await api.post("/register/send-otp", {
+        name, email: normalizedEmail, phone, password, role,
+        restaurantName, restaurantAddress, vehicleType, vehicleNumber, adminInviteCode,
+      });
+    } catch (err) {
+      return { success: false, message: apiErrorMessage(err, "Could not send the verification email. Please try again.") };
+    }
+    const signup = {
+      email: normalizedEmail,
       maskedEmail: maskEmail(email),
       maskedPhone: maskPhone(phone),
-    });
+    };
+    setPendingSignup(signup);
+    try { sessionStorage.setItem(PENDING_SIGNUP_KEY, JSON.stringify(signup)); } catch { /* session storage may be unavailable */ }
+    return { success: true };
   }
 
-  function verifyOtpMock(code) {
-    if (code === DEMO_OTP) {
-      setUser({ name: pendingSignup?.name || "Alex", email: pendingSignup?.maskedEmail || DEMO_EMAIL, role: "customer" });
-      setPendingSignup(null);
-      return { success: true };
+  async function verifyOtpMock(code) {
+    if (!pendingSignup) {
+      return { success: false, message: "Your signup session expired. Please register again." };
     }
-    return { success: false, message: "Incorrect verification code. Please try again." };
+    try {
+      const { email } = pendingSignup;
+      await api.post("/register/verify-otp", { email, code });
+      const { data } = await api.post("/register", { email });
+      setToken(data.token);
+      setUser(toFrontendUser(data.user));
+      setPendingSignup(null);
+      sessionStorage.removeItem(PENDING_SIGNUP_KEY);
+      return { success: true, role: toFrontendUser(data.user).role };
+    } catch (err) {
+      return { success: false, message: apiErrorMessage(err, "Could not create your account.") };
+    }
+  }
+
+  async function resendRegistrationOtp() {
+    if (!pendingSignup) return { success: false, message: "Your signup session expired. Please register again." };
+    try {
+      await api.post("/register/send-otp", { email: pendingSignup.email });
+      return { success: true };
+    } catch (err) {
+      return { success: false, message: apiErrorMessage(err, "Could not resend the verification email.") };
+    }
   }
 
   function logoutMock() {
+    const token = getToken();
+    if (token) {
+      api.post("/logout", null, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    }
+    setToken(null);
     setUser(null);
   }
 
@@ -97,28 +187,41 @@ export function AuthProvider({ children }) {
     setUser((prev) => (prev ? { ...prev, ...patch } : prev));
   }
 
-  function blockCustomer(id) {
-    setCustomers((prev) => prev.map((c) => (c.id === id ? { ...c, status: "blocked" } : c)));
+  // Optimistic: the UI changes immediately and rolls back if the server rejects it.
+  async function setCustomerStatus(id, status) {
+    const previous = customers;
+    setCustomers((prev) => prev.map((c) => (c.id === id ? { ...c, status } : c)));
+    try {
+      await api.patch(`/admin/customers/${id}/status`, { status });
+      return { success: true };
+    } catch (err) {
+      setCustomers(previous);
+      return { success: false, message: apiErrorMessage(err, "Could not update the customer.") };
+    }
   }
 
-  function unblockCustomer(id) {
-    setCustomers((prev) => prev.map((c) => (c.id === id ? { ...c, status: "active" } : c)));
-  }
+  const blockCustomer = (id) => setCustomerStatus(id, "blocked");
+  const unblockCustomer = (id) => setCustomerStatus(id, "active");
 
   const value = useMemo(
     () => ({
       user,
+      authLoading,
       pendingSignup,
       loginMock,
+      loginWithGoogle,
       startRegistration,
+      resendRegistrationOtp,
       verifyOtpMock,
       logoutMock,
       updateAdminProfile,
+      refreshUser,
+      updateProfile,
       customers,
       blockCustomer,
       unblockCustomer,
     }),
-    [user, pendingSignup, customers]
+    [user, authLoading, pendingSignup, customers, refreshUser, updateProfile, loginWithGoogle]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -5,13 +5,19 @@
   border-radius: var(--radius-lg);
   overflow: hidden;
   border: 1px solid var(--color-border);
-  transition: transform var(--duration-base) var(--ease-out), box-shadow var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out);
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 220ms var(--ease-out),
+    border-color 220ms ease;
 }
 
 .restaurant-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-6px) scale(1.008);
   box-shadow: var(--shadow-card-hover);
-  border-color: transparent;
+  border-color: var(--color-primary-light);
+}
+
+.restaurant-card:active {
+  transform: translateY(-2px) scale(0.99);
 }
 
 .restaurant-card__media {

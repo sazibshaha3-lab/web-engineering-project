@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { PackageSearch, User, Store, Bike } from "lucide-react";
 import PageHeader from "../../components/common/PageHeader";
@@ -9,17 +10,35 @@ import DeliveryInfo from "../../components/order/DeliveryInfo";
 import OrderSummary from "../../components/order/OrderSummary";
 import AdminOrderStatusControl from "../../components/admin/AdminOrderStatusControl";
 import { useAdmin } from "../../context/AdminContext";
-import { currentCustomer } from "../../data/users";
 import { liveOrderStatusMap } from "../../utils/statusMaps";
 import "./admin-shared.css";
 
 export default function AdminOrderDetails() {
   const { orderId } = useParams();
   const navigate = useNavigate();
-  const { getOrderById, allRestaurants, riders } = useAdmin();
+  const { getOrderById, allRestaurants, riders, ordersLoading, reloadOrders } = useAdmin();
   const order = getOrderById(orderId);
+  const [refreshedOrderId, setRefreshedOrderId] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+    reloadOrders().finally(() => {
+      if (active) setRefreshedOrderId(orderId);
+    });
+    return () => {
+      active = false;
+    };
+  }, [orderId, reloadOrders]);
 
   if (!order) {
+    if (refreshedOrderId !== orderId || ordersLoading) {
+      return (
+        <div className="dashboard-panel" role="status" aria-live="polite">
+          Loading order…
+        </div>
+      );
+    }
+
     return (
       <ErrorState
         title="Order not found"
@@ -59,11 +78,11 @@ export default function AdminOrderDetails() {
             </h3>
             <div className="admin-detail__field">
               <span>Name</span>
-              <span>{currentCustomer.name}</span>
+              <span>{order.customer?.name || "Customer"}</span>
             </div>
             <div className="admin-detail__field">
               <span>Phone</span>
-              <span>{currentCustomer.phone}</span>
+              <span>{order.customer?.phone || "—"}</span>
             </div>
             <DeliveryInfo
               address={order.deliveryAddress}

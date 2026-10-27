@@ -1,130 +1,195 @@
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import api, { apiErrorMessage } from "../services/api";
+import { useAuth } from "./AuthContext";
 import { useOrders } from "./OrderContext";
-import { initialRiders, LIVE_RIDER_ID } from "../data/riders";
+import { useToast } from "../components/feedback/ToastContext";
+import { normalizeOrder } from "../services/orderApi";
+import { normalizeRider } from "../services/peopleApi";
 
 const RiderContext = createContext(null);
 
 const EARNING_PER_DELIVERY = 50;
+const POLL_MS = 10000;
+const ACTIVE = ["READY_FOR_PICKUP", "PICKED_UP", "OUT_FOR_DELIVERY"];
 
 export function RiderProvider({ children }) {
-  const { orders, updateOrderStatus, assignRiderToOrder } = useOrders();
-  // Full rider registry — single source of truth for both the Rider
-  // panel (the logged-in demo rider) and the Admin Riders panel. There
-  // is no separate "adminRiders" list.
-  const [riders, setRiders] = useState(initialRiders);
+  const { user, refreshUser } = useAuth();
+  const { orders, updateOrderStatus, reload: reloadOrders } = useOrders();
+  const toast = useToast();
+  const toastRef = useRef(toast);
+  toastRef.current = toast;
+  const notify = (message, tone = "error") => toastRef.current?.showToast(message, tone);
+
+  const [adminRiders, setAdminRiders] = useState([]);
+  const [availableOrders, setAvailableOrders] = useState([]);
   const [isAvailable, setIsAvailable] = useState(true);
   const [declinedIds, setDeclinedIds] = useState(() => new Set());
 
+  const isRider = user?.role === "rider";
+  const isAdmin = user?.role === "admin";
+
+  // Logged-in rider: `user.rider` from /me plus the user's name/email/phone
   const rider = useMemo(
-    () => riders.find((r) => r.id === LIVE_RIDER_ID) || riders[0],
-    [riders]
+    () => (isRider && user?.rider ? normalizeRider({ ...user.rider, user }) : null),
+    [isRider, user]
   );
+  // Admin sees every rider (/admin/riders); the rider panel only sees their own record.
+  const riders = isAdmin ? adminRiders : rider ? [rider] : [];
+
+  const isApproved = rider?.approvalStatus === "APPROVED";
+
+  // ---------- Admin: rider registry ----------
+  useEffect(() => {
+    if (!isAdmin) {
+      setAdminRiders([]);
+      return;
+    }
+    let cancelled = false;
+    api
+      .get("/admin/riders")
+      .then(({ data }) => !cancelled && setAdminRiders(data.map(normalizeRider)))
+      .catch((err) => !cancelled && notify(apiErrorMessage(err, "Could not load riders.")));
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdmin]);
+
+  // ---------- Rider: orders waiting for a rider (READY_FOR_PICKUP, unassigned) ----------
+  const loadAvailable = useCallback(async () => {
+    try {
+      const { data } = await api.get("/rider/available-orders");
+      setAvailableOrders(data.map(normalizeOrder));
+    } catch {
+      // the next poll retries
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isRider || !isApproved) {
+      setAvailableOrders([]);
+      return;
+    }
+    loadAvailable();
+    const tick = () => {
+      if (!document.hidden) loadAvailable();
+    };
+    const timer = setInterval(tick, POLL_MS);
+    document.addEventListener("visibilitychange", tick);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", tick);
+    };
+  }, [isRider, isApproved, loadAvailable]);
 
   function setAvailability(next) {
     setIsAvailable(next);
   }
 
   function getAvailableDeliveries() {
-    if (rider.approvalStatus !== "APPROVED" || !isAvailable) return [];
-    return orders.filter(
-      (o) => o.status === "READY_FOR_PICKUP" && !o.riderId && !declinedIds.has(o.id)
-    );
+    if (!rider || !isApproved || !isAvailable) return [];
+    return availableOrders.filter((o) => !declinedIds.has(o.id));
   }
 
   function getAssignedDeliveries() {
-    return orders.filter(
-      (o) => o.riderId === rider.id && ["READY_FOR_PICKUP", "PICKED_UP", "OUT_FOR_DELIVERY"].includes(o.status)
-    );
+    if (!rider) return [];
+    return orders.filter((o) => o.riderId === rider.id && ACTIVE.includes(o.status));
   }
 
   function getDeliveryHistory() {
+    if (!rider) return [];
     return orders.filter((o) => o.riderId === rider.id && o.status === "DELIVERED");
   }
 
-  function acceptDelivery(orderId) {
-    if (rider.approvalStatus !== "APPROVED") {
+  async function acceptDelivery(orderId) {
+    if (!rider || !isApproved) {
       return { success: false, message: "Your rider account is not approved for deliveries." };
     }
     if (!isAvailable) {
       return { success: false, message: "You are unavailable for new deliveries." };
     }
 
-    const order = orders.find((o) => o.id === orderId);
-    if (!order || order.status !== "READY_FOR_PICKUP") {
+    const order = availableOrders.find((o) => o.id === orderId);
+    if (!order) {
       return { success: false, message: "This delivery is no longer available." };
     }
-    if (order.riderId) {
-      return { success: false, message: "This delivery has already been assigned to another rider." };
-    }
 
-    const result = assignRiderToOrder(orderId, rider.id);
-    if (!result.success) {
-      return { success: false, message: "This delivery has already been assigned to another rider." };
+    try {
+      await api.post(`/rider/orders/${order.dbId}/claim`);
+      await reloadOrders(); // bring the claimed order into OrderContext's list
+      loadAvailable();
+      return { success: true };
+    } catch (err) {
+      loadAvailable();
+      const taken = err?.response?.status === 409;
+      return {
+        success: false,
+        message: taken
+          ? "This delivery has already been assigned to another rider."
+          : apiErrorMessage(err, "Could not accept this delivery."),
+      };
     }
-    return { success: true };
   }
 
   function rejectDelivery(orderId) {
     setDeclinedIds((prev) => new Set(prev).add(orderId));
   }
 
-  function markPickedUp(orderId) {
+  async function transition(orderId, from, to) {
     const order = orders.find((o) => o.id === orderId);
-    if (!order || order.riderId !== rider.id || order.status !== "READY_FOR_PICKUP") {
-      return { success: false };
+    if (!order || !rider || order.riderId !== rider.id || order.status !== from) {
+      return { success: false, message: "This delivery can no longer be updated that way." };
     }
-    return updateOrderStatus(orderId, "PICKED_UP");
+    return updateOrderStatus(orderId, to);
   }
 
-  function startDelivery(orderId) {
-    const order = orders.find((o) => o.id === orderId);
-    if (!order || order.riderId !== rider.id || order.status !== "PICKED_UP") {
-      return { success: false };
-    }
-    return updateOrderStatus(orderId, "OUT_FOR_DELIVERY");
-  }
+  const markPickedUp = (orderId) => transition(orderId, "READY_FOR_PICKUP", "PICKED_UP");
+  const startDelivery = (orderId) => transition(orderId, "PICKED_UP", "OUT_FOR_DELIVERY");
 
-  function markDelivered(orderId) {
-    const order = orders.find((o) => o.id === orderId);
-    if (!order || order.riderId !== rider.id || order.status !== "OUT_FOR_DELIVERY") {
-      return { success: false };
-    }
-    const result = updateOrderStatus(orderId, "DELIVERED");
-    if (result.success) {
-      setRiders((prev) => prev.map((r) => (r.id === rider.id ? { ...r, totalDeliveries: r.totalDeliveries + 1 } : r)));
-    }
+  async function markDelivered(orderId) {
+    const result = await transition(orderId, "OUT_FOR_DELIVERY", "DELIVERED");
+    if (result.success) refreshUser(); // the server incremented totalDeliveries; fetch the new count
     return result;
   }
 
-  function updateRiderProfile(patch) {
-    setRiders((prev) => prev.map((r) => (r.id === rider.id ? { ...r, ...patch } : r)));
+  async function updateRiderProfile(patch) {
+    try {
+      await api.put("/rider/profile", {
+        name: patch.name,
+        phone: patch.phone,
+        vehicleType: patch.vehicleType,
+        vehicleNumber: patch.vehicleNumber,
+      });
+      await refreshUser();
+      return { success: true };
+    } catch (err) {
+      return { success: false, message: apiErrorMessage(err, "Could not update your profile.") };
+    }
   }
 
-  // ---- Admin-only actions (Step 8) — operate on the same registry ----
-
-  function approveRider(id) {
-    setRiders((prev) => prev.map((r) => (r.id === id ? { ...r, approvalStatus: "APPROVED" } : r)));
+  // ---------- Admin-only actions (optimistic, rolled back on failure) ----------
+  async function adminSetRider(id, approvalStatus) {
+    const previous = adminRiders;
+    setAdminRiders((prev) => prev.map((r) => (r.id === id ? { ...r, approvalStatus } : r)));
+    try {
+      await api.patch(`/admin/riders/${id}/approval`, { approvalStatus });
+    } catch (err) {
+      setAdminRiders(previous);
+      notify(apiErrorMessage(err, "Action failed."));
+    }
   }
 
-  function rejectRider(id) {
-    setRiders((prev) => prev.map((r) => (r.id === id ? { ...r, approvalStatus: "REJECTED" } : r)));
-  }
+  const approveRider = (id) => adminSetRider(id, "APPROVED");
+  const rejectRider = (id) => adminSetRider(id, "REJECTED");
+  const blockRider = (id) => adminSetRider(id, "BLOCKED");
+  const unblockRider = (id) => adminSetRider(id, "APPROVED");
 
-  function blockRider(id) {
-    setRiders((prev) => prev.map((r) => (r.id === id ? { ...r, approvalStatus: "BLOCKED" } : r)));
-  }
-
-  function unblockRider(id) {
-    setRiders((prev) => prev.map((r) => (r.id === id ? { ...r, approvalStatus: "APPROVED" } : r)));
-  }
-
-  const deliveredToday = orders.filter((o) => o.riderId === rider.id && o.status === "DELIVERED").length;
+  const deliveredCount = getDeliveryHistory().length;
 
   const stats = {
-    todaysDeliveries: deliveredToday,
+    todaysDeliveries: deliveredCount,
     activeDelivery: getAssignedDeliveries().length,
-    completedDeliveries: getDeliveryHistory().length,
-    todaysEarnings: deliveredToday * EARNING_PER_DELIVERY,
+    completedDeliveries: deliveredCount,
+    todaysEarnings: deliveredCount * EARNING_PER_DELIVERY,
   };
 
   const value = {

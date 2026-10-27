@@ -1,4 +1,5 @@
-import { Plus, Star, Flame, Clock } from "lucide-react";
+import { useState } from "react";
+import { Plus, Check, Star, Flame, Clock } from "lucide-react";
 import ImageWithFallback from "../common/ImageWithFallback";
 import "./FoodCard.css";
 
@@ -6,6 +7,7 @@ export default function FoodCard({ food, onOpenDetails, onQuickAdd, disabled, qu
   const { name, restaurantName, description, image, price, rating, preparationTime, isAvailable, isPopular } = food;
   const unavailable = !isAvailable;
   const addDisabled = unavailable || disabled;
+  const [justAdded, setJustAdded] = useState(false);
 
   function handleCardClick() {
     onOpenDetails?.(food);
@@ -21,6 +23,8 @@ export default function FoodCard({ food, onOpenDetails, onQuickAdd, disabled, qu
   function handleAddClick(e) {
     e.stopPropagation();
     if (addDisabled) return;
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 700);
     onQuickAdd?.(food);
   }
 
@@ -63,8 +67,19 @@ export default function FoodCard({ food, onOpenDetails, onQuickAdd, disabled, qu
           </span>
         </div>
       </div>
-      <button className="food-card__add" disabled={addDisabled} onClick={handleAddClick} aria-label={`Add ${name}`}>
-        {quantityInCart > 0 ? quantityInCart : <Plus size={18} strokeWidth={2.4} />}
+      <button
+        className={`food-card__add ${justAdded ? "is-just-added" : ""}`}
+        disabled={addDisabled}
+        onClick={handleAddClick}
+        aria-label={`Add ${name}`}
+      >
+        {justAdded ? (
+          <Check size={18} strokeWidth={2.8} className="food-card__add-check" />
+        ) : quantityInCart > 0 ? (
+          <span className="food-card__add-qty">{quantityInCart}</span>
+        ) : (
+          <Plus size={18} strokeWidth={2.4} />
+        )}
       </button>
     </div>
   );

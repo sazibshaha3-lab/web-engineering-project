@@ -4,6 +4,103 @@
   gap: var(--space-4);
 }
 
+.auth-social-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-5) 0 var(--space-3);
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.auth-social-divider::before,
+.auth-social-divider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: var(--color-border);
+}
+
+.google-signin__button {
+  display: flex;
+  min-height: 44px;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.google-signin__button.is-disabled { opacity: 0.55; pointer-events: none; }
+.google-signin__button.is-empty { display: none; }
+.google-signin__fallback {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  font: 500 0.9rem var(--font-body);
+}
+.google-signin__fallback span { color: #4285f4; font-weight: 700; font-size: 1.15rem; }
+.google-signin__message,
+.google-signin__hint { margin: var(--space-2) 0 0; color: var(--color-text-muted); font-size: 0.76rem; text-align: center; }
+.google-signin__message { color: var(--color-error); }
+
+.register-role-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+
+.register-role-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-3);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  text-align: left;
+  user-select: none;
+  cursor: pointer;
+  transition: border-color 180ms ease,
+    background-color 180ms ease,
+    transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 180ms ease;
+}
+
+.register-role-option:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 6px 16px rgba(30, 22, 14, 0.08);
+}
+
+.register-role-option:active {
+  transform: scale(0.96) !important;
+}
+
+.register-role-option:disabled { cursor: wait; opacity: 0.65; }
+.register-role-option.is-selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-tint);
+  color: var(--color-primary-dark);
+  box-shadow: 0 0 0 2px var(--color-primary);
+  animation: pop-bounce 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.register-role-option:focus-visible { outline: 3px solid var(--color-primary-light); outline-offset: 2px; }
+.register-role-option > svg { flex-shrink: 0; }
+.register-role-option span { display: flex; min-width: 0; flex-direction: column; }
+.register-role-option strong { color: var(--color-text); font-size: 0.82rem; }
+.register-role-option small { color: var(--color-text-muted); font-size: 0.7rem; }
+
 .auth-form__row {
   display: flex;
   align-items: center;
@@ -88,19 +185,30 @@
   border-radius: var(--radius-md);
   background: var(--color-surface);
   text-align: left;
-  transition: border-color var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out),
-    box-shadow var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out);
+  user-select: none;
+  cursor: pointer;
+  transition: border-color 180ms ease,
+    transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 180ms ease;
 }
 
 .demo-accounts__item:hover:not(:disabled) {
   border-color: var(--color-primary);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(242, 98, 46, 0.16);
 }
 
-.demo-accounts__item:active:not(:disabled) { transform: translateY(0); }
+.demo-accounts__item:active:not(:disabled) {
+  transform: scale(0.95) !important;
+}
 
 .demo-accounts__item:disabled { opacity: 0.55; }
+
+.demo-accounts__item:hover:not(:disabled) .demo-accounts__icon {
+  transform: scale(1.15) rotate(6deg);
+  background: var(--color-primary);
+  color: #fff;
+}
 
 .demo-accounts__icon {
   width: 34px;
@@ -111,6 +219,9 @@
   place-items: center;
   background: var(--color-primary-tint);
   color: var(--color-primary);
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    background-color 200ms ease,
+    color 200ms ease;
 }
 
 .demo-accounts__spinner {
@@ -147,11 +258,13 @@
 
 @media (max-width: 420px) {
   .demo-accounts__grid { grid-template-columns: 1fr; }
+  .register-role-grid { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .demo-accounts { animation: none; }
   .demo-accounts__item { transition: none; }
+  .register-role-option { transition: none; }
   .demo-accounts__spinner { animation-duration: 1.4s; }
 }
 

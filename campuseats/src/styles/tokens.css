@@ -109,6 +109,36 @@
   --z-toast: 600;
 }
 
+:root[data-theme="blue"] {
+  --color-primary: #3178c6;
+  --color-primary-dark: #215a99;
+  --color-primary-light: #dcebfa;
+  --color-primary-tint: #eff7ff;
+  --color-accent: #65a9e8;
+  --color-accent-dark: #3178c6;
+  --shadow-card-hover: 0 20px 36px rgba(49, 120, 198, 0.16), 0 8px 16px rgba(30, 22, 14, 0.08);
+}
+
+:root[data-theme="purple"] {
+  --color-primary: #8551bf;
+  --color-primary-dark: #69389c;
+  --color-primary-light: #edddfa;
+  --color-primary-tint: #f7f0fc;
+  --color-accent: #b48add;
+  --color-accent-dark: #8551bf;
+  --shadow-card-hover: 0 20px 36px rgba(133, 81, 191, 0.16), 0 8px 16px rgba(30, 22, 14, 0.08);
+}
+
+:root[data-theme="green"] {
+  --color-primary: #2f8f62;
+  --color-primary-dark: #216c49;
+  --color-primary-light: #d8f0e3;
+  --color-primary-tint: #eff9f2;
+  --color-accent: #6eb98e;
+  --color-accent-dark: #2f8f62;
+  --shadow-card-hover: 0 20px 36px rgba(47, 143, 98, 0.16), 0 8px 16px rgba(30, 22, 14, 0.08);
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root {
     --duration-fast: 0ms;

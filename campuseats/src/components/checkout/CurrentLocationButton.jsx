@@ -4,26 +4,57 @@ import "./CurrentLocationButton.css";
 
 export default function CurrentLocationButton({ onDetected, onUseSavedInstead }) {
   const [state, setState] = useState("idle"); // idle | detecting | success | error
-  const [attempt, setAttempt] = useState(0);
+  const [errorMessage, setErrorMessage] = useState("");
 
   function handleDetect() {
+    if (!navigator.geolocation) {
+      setErrorMessage("This browser doesn't support device location. Please choose a saved address or enter one manually.");
+      setState("error");
+      return;
+    }
+
     setState("detecting");
-    setTimeout(() => {
-      const nextAttempt = attempt + 1;
-      setAttempt(nextAttempt);
-      if (nextAttempt === 1) {
-        setState("error");
-      } else {
+    setErrorMessage("");
+    navigator.geolocation.getCurrentPosition(
+      async ({ coords }) => {
+        const latitude = Number(coords.latitude.toFixed(6));
+        const longitude = Number(coords.longitude.toFixed(6));
+        const accuracy = Math.max(1, Math.round(coords.accuracy));
+        setState("saving");
+        let result;
+        try {
+          result = await onDetected?.({
+            label: "Current location",
+            line: "My current GPS location",
+            area: "",
+            city: "",
+            details: `GPS accuracy about ${accuracy} m`,
+            latitude,
+            longitude,
+          });
+        } catch {
+          setErrorMessage("We found your location but couldn't save it. Please try again.");
+          setState("error");
+          return;
+        }
+        if (result?.success === false) {
+          setErrorMessage(result.message || "We found your location but couldn't save it. Please try again.");
+          setState("error");
+          return;
+        }
         setState("success");
-        onDetected?.({
-          label: "Other",
-          line: "Current location (near Campus Gate)",
-          area: "Detected area",
-          city: "Campus Town",
-          details: "Detected via device location",
-        });
-      }
-    }, 1000);
+      },
+      (error) => {
+        const messages = {
+          1: "Location permission was denied. Allow location access in your browser settings, or enter your address manually.",
+          2: "Your device couldn't determine its location. Try again or enter your address manually.",
+          3: "Location request timed out. Try again or enter your address manually.",
+        };
+        setErrorMessage(messages[error.code] || "Couldn't get your location. Please try again or enter your address manually.");
+        setState("error");
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 }
+    );
   }
 
   if (state === "success") {
@@ -43,7 +74,7 @@ export default function CurrentLocationButton({ onDetected, onUseSavedInstead })
         <div className="current-location__error">
           <AlertTriangle size={18} strokeWidth={2} style={{ flexShrink: 0 }} />
           <div>
-            <span>We couldn't detect your current location.</span>
+            <span>{errorMessage}</span>
             <div className="current-location__error-actions">
               <button type="button" onClick={handleDetect}>Try again</button>
               <button type="button" onClick={onUseSavedInstead}>Choose a saved address</button>
@@ -56,11 +87,11 @@ export default function CurrentLocationButton({ onDetected, onUseSavedInstead })
 
   return (
     <div className="current-location">
-      <button type="button" className="current-location__trigger" onClick={handleDetect} disabled={state === "detecting"}>
-        <span className={`current-location__icon ${state === "detecting" ? "is-spinning" : ""}`}>
-          {state === "detecting" ? <Loader2 size={17} strokeWidth={2} /> : <LocateFixed size={17} strokeWidth={2} />}
+      <button type="button" className="current-location__trigger" onClick={handleDetect} disabled={state === "detecting" || state === "saving"}>
+        <span className={`current-location__icon ${state === "detecting" || state === "saving" ? "is-spinning" : ""}`}>
+          {state === "detecting" || state === "saving" ? <Loader2 size={17} strokeWidth={2} /> : <LocateFixed size={17} strokeWidth={2} />}
         </span>
-        {state === "detecting" ? "Detecting your location..." : "Use current location"}
+        {state === "detecting" ? "Detecting your location..." : state === "saving" ? "Saving your location..." : "Use current location"}
       </button>
     </div>
   );

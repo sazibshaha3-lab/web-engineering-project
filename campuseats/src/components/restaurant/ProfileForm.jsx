@@ -44,21 +44,24 @@ export default function ProfileForm({ onDone }) {
     return Object.keys(next).length === 0;
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     if (!validate()) return;
 
     setSaving(true);
-    setTimeout(() => {
-      updateRestaurant({
-        ...form,
-        deliveryFee: Number(form.deliveryFee),
-        minimumOrder: Number(form.minimumOrder),
-      });
-      setSaving(false);
-      toast?.showToast("Restaurant profile updated", "success");
-      onDone?.();
-    }, 500);
+    const result = await updateRestaurant({
+      ...form,
+      deliveryFee: Number(form.deliveryFee),
+      minimumOrder: Number(form.minimumOrder),
+    });
+    setSaving(false);
+
+    if (result?.success === false) {
+      toast?.showToast(result.message, "error");
+      return;
+    }
+    toast?.showToast("Restaurant profile updated", "success");
+    onDone?.();
   }
 
   return (

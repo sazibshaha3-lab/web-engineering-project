@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import "./BottomSheet.css";
 
@@ -18,7 +19,8 @@ export default function BottomSheet({ open, onClose, title, children }) {
 
   if (!open) return null;
 
-  return (
+  // Portal: same reason as Modal (transformed ancestors break position: fixed)
+  return createPortal(
     <div className="bottom-sheet-overlay" onMouseDown={onClose}>
       <div
         className="bottom-sheet"
@@ -36,6 +38,7 @@ export default function BottomSheet({ open, onClose, title, children }) {
         </div>
         <div className="bottom-sheet__body">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

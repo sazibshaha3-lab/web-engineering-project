@@ -3,7 +3,6 @@ import Button from "../common/Button";
 import OrderStatusBadge from "../order/OrderStatusBadge";
 import EmptyState from "../common/EmptyState";
 import { ClipboardList } from "lucide-react";
-import { currentCustomer } from "../../data/users";
 
 export default function RecentOrders({ orders }) {
   return (
@@ -22,7 +21,7 @@ export default function RecentOrders({ orders }) {
           return (
             <div className="recent-order-row" key={order.id}>
               <div className="recent-order-row__info">
-                <p className="recent-order-row__id">{order.id} · {currentCustomer.name}</p>
+                <p className="recent-order-row__id">{order.id} · {order.customer?.name || "Customer"}</p>
                 <p className="recent-order-row__meta">
                   {itemCount} item{itemCount > 1 ? "s" : ""} ·{" "}
                   {new Date(order.createdAt).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}

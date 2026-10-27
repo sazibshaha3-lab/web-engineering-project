@@ -1,0 +1,835 @@
+{
+  "categories": [
+    {
+      "id": "burger",
+      "name": "Burger",
+      "image": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300&q=70&auto=format&fit=crop"
+    },
+    {
+      "id": "pizza",
+      "name": "Pizza",
+      "image": "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=300&q=70&auto=format&fit=crop"
+    },
+    {
+      "id": "biryani",
+      "name": "Biryani",
+      "image": "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=300&q=70&auto=format&fit=crop"
+    },
+    {
+      "id": "chicken",
+      "name": "Chicken",
+      "image": "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=300&q=70&auto=format&fit=crop"
+    },
+    {
+      "id": "drinks",
+      "name": "Drinks",
+      "image": "https://images.unsplash.com/photo-1544145945-f90425340c7e?w=300&q=70&auto=format&fit=crop"
+    },
+    {
+      "id": "desserts",
+      "name": "Desserts",
+      "image": "https://images.unsplash.com/photo-1551024506-0bccd828d307?w=300&q=70&auto=format&fit=crop"
+    },
+    {
+      "id": "fastfood",
+      "name": "Fast Food",
+      "image": "https://images.unsplash.com/photo-1550547660-d9450f859349?w=300&q=70&auto=format&fit=crop"
+    },
+    {
+      "id": "traditional",
+      "name": "Traditional",
+      "image": "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=300&q=70&auto=format&fit=crop"
+    }
+  ],
+  "restaurants": [
+    {
+      "id": "r1",
+      "owner": "Imran Hossain",
+      "address": "Shop 4, Campus Commercial Block, Near Gate 2",
+      "name": "Campus Grill House",
+      "image": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1000&q=70&auto=format&fit=crop",
+      "logo": "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=160&q=70&auto=format&fit=crop",
+      "description": "Char-grilled burgers, crispy fried chicken and campus-favourite fast food, made fresh to order and delivered hot.",
+      "rating": 4.8,
+      "reviewCount": 612,
+      "category": "Fast Food",
+      "deliveryTime": "20-30 min",
+      "deliveryFee": 20,
+      "isOpen": true,
+      "openingTime": "10:00 AM",
+      "closingTime": "11:00 PM",
+      "minimumOrder": 100,
+      "approvalStatus": "APPROVED",
+      "blocked": false
+    },
+    {
+      "id": "r2",
+      "owner": "Salma Khatun",
+      "address": "12 University Road, Opposite Central Library",
+      "name": "Nawabi Biryani House",
+      "image": "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=1000&q=70&auto=format&fit=crop",
+      "logo": "https://images.unsplash.com/photo-1600891964092-4316c288032e?w=160&q=70&auto=format&fit=crop",
+      "description": "Slow-cooked kacchi biryani and traditional Bengali favourites, using recipes passed down for three generations.",
+      "rating": 4.9,
+      "reviewCount": 1204,
+      "category": "Traditional",
+      "deliveryTime": "25-35 min",
+      "deliveryFee": 25,
+      "isOpen": true,
+      "openingTime": "11:00 AM",
+      "closingTime": "10:30 PM",
+      "minimumOrder": 150,
+      "approvalStatus": "APPROVED",
+      "blocked": false
+    },
+    {
+      "id": "r3",
+      "owner": "Nasir Uddin",
+      "address": "Hostel Road, Next to Boys' Hall Gate",
+      "name": "Hostel Corner Cafe",
+      "image": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1000&q=70&auto=format&fit=crop",
+      "logo": "https://images.unsplash.com/photo-1600891964092-4316c288032e?w=160&q=70&auto=format&fit=crop",
+      "description": "The late-night hostel favourite — fried chicken, loaded fries and quick bites for study breaks and cram sessions.",
+      "rating": 4.5,
+      "reviewCount": 348,
+      "category": "Fast Food",
+      "deliveryTime": "15-25 min",
+      "deliveryFee": 15,
+      "isOpen": true,
+      "openingTime": "9:00 AM",
+      "closingTime": "1:00 AM",
+      "minimumOrder": 80,
+      "approvalStatus": "APPROVED",
+      "blocked": false
+    },
+    {
+      "id": "r4",
+      "owner": "Rezwan Karim",
+      "address": "Shop 9, Campus Food Court, Main Road",
+      "name": "Pizza Junction",
+      "image": "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1000&q=70&auto=format&fit=crop",
+      "logo": "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=160&q=70&auto=format&fit=crop",
+      "description": "Hand-tossed pizzas baked in a wood-fired oven, topped with fresh vegetables and quality cheese.",
+      "rating": 4.6,
+      "reviewCount": 521,
+      "category": "Pizza",
+      "deliveryTime": "30-40 min",
+      "deliveryFee": 30,
+      "isOpen": false,
+      "openingTime": "12:00 PM",
+      "closingTime": "10:00 PM",
+      "minimumOrder": 200,
+      "approvalStatus": "APPROVED",
+      "blocked": false
+    },
+    {
+      "id": "r5",
+      "owner": "Kamal Uddin",
+      "address": "Mess Bazaar Lane, Behind Girls' Hall",
+      "name": "Mess Deshi Kitchen",
+      "image": "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=1000&q=70&auto=format&fit=crop",
+      "logo": "https://images.unsplash.com/photo-1600891964092-4316c288032e?w=160&q=70&auto=format&fit=crop",
+      "description": "Home-style Bengali mess food — rice, bhuna, bhorta and daily specials, just like home.",
+      "rating": 4.7,
+      "reviewCount": 289,
+      "category": "Traditional",
+      "deliveryTime": "20-30 min",
+      "deliveryFee": 20,
+      "isOpen": true,
+      "openingTime": "8:00 AM",
+      "closingTime": "9:30 PM",
+      "minimumOrder": 100,
+      "approvalStatus": "APPROVED",
+      "blocked": false
+    },
+    {
+      "id": "r6",
+      "owner": "Farida Yasmin",
+      "address": "Shop 2, Campus Commercial Block, Near Gate 2",
+      "name": "Sweet Tooth Desserts",
+      "image": "https://images.unsplash.com/photo-1551024506-0bccd828d307?w=1000&q=70&auto=format&fit=crop",
+      "logo": "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=160&q=70&auto=format&fit=crop",
+      "description": "Cakes, puddings and ice cream for whenever the craving hits — campus's go-to dessert stop.",
+      "rating": 4.4,
+      "reviewCount": 176,
+      "category": "Desserts",
+      "deliveryTime": "20-30 min",
+      "deliveryFee": 20,
+      "isOpen": true,
+      "openingTime": "11:00 AM",
+      "closingTime": "11:30 PM",
+      "minimumOrder": 100,
+      "approvalStatus": "APPROVED",
+      "blocked": false
+    },
+    {
+      "id": "r7",
+      "address": "Shop 14, New Market Row, Near East Gate",
+      "name": "Green Leaf Kitchen",
+      "image": "https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?w=1000&q=70&auto=format&fit=crop",
+      "logo": "https://images.unsplash.com/photo-1600891964092-4316c288032e?w=160&q=70&auto=format&fit=crop",
+      "description": "Fresh salads, wraps and traditional vegetarian plates for a lighter campus meal.",
+      "rating": 0,
+      "reviewCount": 0,
+      "category": "Traditional",
+      "deliveryTime": "20-30 min",
+      "deliveryFee": 20,
+      "isOpen": false,
+      "openingTime": "10:00 AM",
+      "closingTime": "9:00 PM",
+      "minimumOrder": 100,
+      "owner": "Aminul Haque",
+      "approvalStatus": "PENDING",
+      "blocked": false
+    },
+    {
+      "id": "r8",
+      "address": "Shop 3, Northside Food Lane, Behind Auditorium",
+      "name": "Northside Noodle Bar",
+      "image": "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=1000&q=70&auto=format&fit=crop",
+      "logo": "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=160&q=70&auto=format&fit=crop",
+      "description": "Wok-tossed noodles and Chinese-style campus favourites, fast and fresh.",
+      "rating": 0,
+      "reviewCount": 0,
+      "category": "Chinese",
+      "deliveryTime": "25-35 min",
+      "deliveryFee": 25,
+      "isOpen": false,
+      "openingTime": "11:00 AM",
+      "closingTime": "10:00 PM",
+      "minimumOrder": 120,
+      "owner": "Tania Sultana",
+      "approvalStatus": "PENDING",
+      "blocked": false
+    }
+  ],
+  "foods": [
+    {
+      "id": "f1",
+      "restaurantId": "r1",
+      "restaurantName": "Campus Grill House",
+      "name": "Smoky Beef Burger",
+      "image": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=700&q=70&auto=format&fit=crop",
+      "description": "A char-grilled beef patty with smoked cheddar, caramelised onions and house sauce on a brioche bun.",
+      "price": 220,
+      "category": "burger",
+      "rating": 4.7,
+      "reviewCount": 214,
+      "preparationTime": "12-15 min",
+      "isAvailable": true,
+      "isPopular": true,
+      "extras": [
+        {
+          "id": "e1",
+          "name": "Extra cheese",
+          "price": 30
+        },
+        {
+          "id": "e2",
+          "name": "Extra patty",
+          "price": 80
+        },
+        {
+          "id": "e3",
+          "name": "Jalapeños",
+          "price": 20
+        }
+      ]
+    },
+    {
+      "id": "f7",
+      "restaurantId": "r1",
+      "restaurantName": "Campus Grill House",
+      "name": "Iced Mango Lassi",
+      "image": "https://images.unsplash.com/photo-1544145945-f90425340c7e?w=700&q=70&auto=format&fit=crop",
+      "description": "A cold, creamy mango yoghurt drink — the perfect companion to anything spicy.",
+      "price": 90,
+      "category": "drinks",
+      "rating": 4.4,
+      "reviewCount": 88,
+      "preparationTime": "5 min",
+      "isAvailable": true,
+      "isPopular": false,
+      "extras": []
+    },
+    {
+      "id": "f9",
+      "restaurantId": "r1",
+      "restaurantName": "Campus Grill House",
+      "name": "Grilled Chicken Burger",
+      "image": "https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=700&q=70&auto=format&fit=crop",
+      "description": "Flame-grilled chicken breast with lettuce, tomato and garlic mayo.",
+      "price": 190,
+      "category": "burger",
+      "rating": 4.6,
+      "reviewCount": 132,
+      "preparationTime": "10-12 min",
+      "isAvailable": true,
+      "isPopular": true,
+      "extras": [
+        {
+          "id": "e1",
+          "name": "Extra cheese",
+          "price": 30
+        },
+        {
+          "id": "e4",
+          "name": "Extra mayo",
+          "price": 15
+        }
+      ]
+    },
+    {
+      "id": "f10",
+      "restaurantId": "r1",
+      "restaurantName": "Campus Grill House",
+      "name": "Crispy Chicken Wings (6 pcs)",
+      "image": "https://images.unsplash.com/photo-1608039755401-742074f0548d?w=700&q=70&auto=format&fit=crop",
+      "description": "Double-fried wings tossed in your choice of spicy or classic BBQ glaze.",
+      "price": 250,
+      "category": "chicken",
+      "rating": 4.8,
+      "reviewCount": 176,
+      "preparationTime": "15-18 min",
+      "isAvailable": true,
+      "isPopular": true,
+      "extras": [
+        {
+          "id": "e5",
+          "name": "Extra spicy glaze",
+          "price": 0
+        },
+        {
+          "id": "e6",
+          "name": "Ranch dip",
+          "price": 25
+        }
+      ]
+    },
+    {
+      "id": "f11",
+      "restaurantId": "r1",
+      "restaurantName": "Campus Grill House",
+      "name": "Loaded Beef Fries",
+      "image": "https://images.unsplash.com/photo-1550547660-d9450f859349?w=700&q=70&auto=format&fit=crop",
+      "description": "Crispy fries topped with seasoned beef, melted cheese and house sauce.",
+      "price": 210,
+      "category": "fastfood",
+      "rating": 4.5,
+      "reviewCount": 97,
+      "preparationTime": "10-12 min",
+      "isAvailable": false,
+      "isPopular": false,
+      "extras": [
+        {
+          "id": "e1",
+          "name": "Extra cheese",
+          "price": 30
+        }
+      ]
+    },
+    {
+      "id": "f12",
+      "restaurantId": "r1",
+      "restaurantName": "Campus Grill House",
+      "name": "Chocolate Brownie Sundae",
+      "image": "https://images.unsplash.com/photo-1541599468348-e96984315921?w=700&q=70&auto=format&fit=crop",
+      "description": "Warm fudge brownie with vanilla ice cream and chocolate drizzle.",
+      "price": 160,
+      "category": "desserts",
+      "rating": 4.7,
+      "reviewCount": 64,
+      "preparationTime": "8 min",
+      "isAvailable": true,
+      "isPopular": false,
+      "extras": [
+        {
+          "id": "e7",
+          "name": "Extra ice cream scoop",
+          "price": 40
+        }
+      ]
+    },
+    {
+      "id": "f2",
+      "restaurantId": "r2",
+      "restaurantName": "Nawabi Biryani House",
+      "name": "Kacchi Biryani (Mutton)",
+      "image": "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=700&q=70&auto=format&fit=crop",
+      "description": "Slow-cooked mutton and fragrant basmati rice, layered and sealed in the traditional dum style.",
+      "price": 320,
+      "category": "biryani",
+      "rating": 4.9,
+      "reviewCount": 402,
+      "preparationTime": "25-30 min",
+      "isAvailable": true,
+      "isPopular": true,
+      "extras": [
+        {
+          "id": "e8",
+          "name": "Extra mutton piece",
+          "price": 90
+        },
+        {
+          "id": "e9",
+          "name": "Borhani (bottle)",
+          "price": 40
+        }
+      ]
+    },
+    {
+      "id": "f13",
+      "restaurantId": "r2",
+      "restaurantName": "Nawabi Biryani House",
+      "name": "Chicken Biryani",
+      "image": "https://images.unsplash.com/photo-1701579231349-06afdd8e5a5e?w=700&q=70&auto=format&fit=crop",
+      "description": "A lighter, everyday favourite — tender chicken with saffron rice and fried onions.",
+      "price": 220,
+      "category": "biryani",
+      "rating": 4.7,
+      "reviewCount": 318,
+      "preparationTime": "20-25 min",
+      "isAvailable": true,
+      "isPopular": true,
+      "extras": [
+        {
+          "id": "e9",
+          "name": "Borhani (bottle)",
+          "price": 40
+        }
+      ]
+    },
+    {
+      "id": "f14",
+      "restaurantId": "r2",
+      "restaurantName": "Nawabi Biryani House",
+      "name": "Beef Tehari",
+      "image": "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=700&q=70&auto=format&fit=crop",
+      "description": "A rich, mustard-oil-forward rice dish with tender beef chunks.",
+      "price": 240,
+      "category": "traditional",
+      "rating": 4.6,
+      "reviewCount": 141,
+      "preparationTime": "20-25 min",
+      "isAvailable": true,
+      "isPopular": false,
+      "extras": []
+    },
+    {
+      "id": "f15",
+      "restaurantId": "r2",
+      "restaurantName": "Nawabi Biryani House",
+      "name": "Firni",
+      "image": "https://images.unsplash.com/photo-1551024601-bec78aea704b?w=700&q=70&auto=format&fit=crop",
+      "description": "A creamy, cardamom-scented rice pudding served chilled in a clay bowl.",
+      "price": 80,
+      "category": "desserts",
+      "rating": 4.8,
+      "reviewCount": 96,
+      "preparationTime": "5 min",
+      "isAvailable": true,
+      "isPopular": false,
+      "extras": []
+    },
+    {
+      "id": "f4",
+      "restaurantId": "r3",
+      "restaurantName": "Hostel Corner Cafe",
+      "name": "Crispy Fried Chicken",
+      "image": "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=700&q=70&auto=format&fit=crop",
+      "description": "Three pieces of crunchy, well-spiced fried chicken with a side of coleslaw.",
+      "price": 180,
+      "category": "chicken",
+      "rating": 4.6,
+      "reviewCount": 152,
+      "preparationTime": "15 min",
+      "isAvailable": true,
+      "isPopular": true,
+      "extras": [
+        {
+          "id": "e6",
+          "name": "Ranch dip",
+          "price": 25
+        }
+      ]
+    },
+    {
+      "id": "f8",
+      "restaurantId": "r3",
+      "restaurantName": "Hostel Corner Cafe",
+      "name": "Loaded Cheese Fries",
+      "image": "https://images.unsplash.com/photo-1550547660-d9450f859349?w=700&q=70&auto=format&fit=crop",
+      "description": "Fries smothered in melted cheese sauce and a sprinkle of chili flakes.",
+      "price": 160,
+      "category": "fastfood",
+      "rating": 4.5,
+      "reviewCount": 88,
+      "preparationTime": "10 min",
+      "isAvailable": true,
+      "isPopular": false,
+      "extras": [
+        {
+          "id": "e1",
+          "name": "Extra cheese",
+          "price": 30
+        }
+      ]
+    },
+    {
+      "id": "f16",
+      "restaurantId": "r3",
+      "restaurantName": "Hostel Corner Cafe",
+      "name": "Midnight Club Sandwich",
+      "image": "https://images.unsplash.com/photo-1567234669003-dce7a7a88821?w=700&q=70&auto=format&fit=crop",
+      "description": "Triple-decker sandwich with grilled chicken, egg, and fresh vegetables.",
+      "price": 170,
+      "category": "fastfood",
+      "rating": 4.4,
+      "reviewCount": 61,
+      "preparationTime": "12 min",
+      "isAvailable": true,
+      "isPopular": false,
+      "extras": []
+    },
+    {
+      "id": "f3",
+      "restaurantId": "r4",
+      "restaurantName": "Pizza Junction",
+      "name": "Chicken Tikka Pizza",
+      "image": "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=700&q=70&auto=format&fit=crop",
+      "description": "Wood-fired pizza topped with spiced chicken tikka, onions and mozzarella.",
+      "price": 450,
+      "category": "pizza",
+      "rating": 4.5,
+      "reviewCount": 203,
+      "preparationTime": "20-25 min",
+      "isAvailable": false,
+      "isPopular": true,
+      "extras": [
+        {
+          "id": "e1",
+          "name": "Extra cheese",
+          "price": 50
+        }
+      ]
+    },
+    {
+      "id": "f17",
+      "restaurantId": "r4",
+      "restaurantName": "Pizza Junction",
+      "name": "Margherita Pizza",
+      "image": "https://images.unsplash.com/photo-1548365328-9f547fb0953b?w=700&q=70&auto=format&fit=crop",
+      "description": "A classic — fresh mozzarella, basil and San Marzano tomato sauce.",
+      "price": 380,
+      "category": "pizza",
+      "rating": 4.6,
+      "reviewCount": 168,
+      "preparationTime": "18-22 min",
+      "isAvailable": true,
+      "isPopular": false,
+      "extras": [
+        {
+          "id": "e1",
+          "name": "Extra cheese",
+          "price": 50
+        }
+      ]
+    },
+    {
+      "id": "f6",
+      "restaurantId": "r5",
+      "restaurantName": "Mess Deshi Kitchen",
+      "name": "Beef Bhuna with Paratha",
+      "image": "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=700&q=70&auto=format&fit=crop",
+      "description": "Slow-cooked beef bhuna served with two layers of flaky paratha.",
+      "price": 210,
+      "category": "traditional",
+      "rating": 4.7,
+      "reviewCount": 121,
+      "preparationTime": "15-20 min",
+      "isAvailable": true,
+      "isPopular": true,
+      "extras": [
+        {
+          "id": "e10",
+          "name": "Extra paratha",
+          "price": 25
+        }
+      ]
+    },
+    {
+      "id": "f18",
+      "restaurantId": "r5",
+      "restaurantName": "Mess Deshi Kitchen",
+      "name": "Daily Rice & Fish Curry",
+      "image": "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=700&q=70&auto=format&fit=crop",
+      "description": "Steamed rice with today's fish curry, dal and a side of vegetables.",
+      "price": 150,
+      "category": "traditional",
+      "rating": 4.5,
+      "reviewCount": 98,
+      "preparationTime": "15 min",
+      "isAvailable": true,
+      "isPopular": false,
+      "extras": []
+    },
+    {
+      "id": "f5",
+      "restaurantId": "r6",
+      "restaurantName": "Sweet Tooth Desserts",
+      "name": "Chocolate Lava Cake",
+      "image": "https://images.unsplash.com/photo-1551024506-0bccd828d307?w=700&q=70&auto=format&fit=crop",
+      "description": "A warm chocolate cake with a molten centre, served with vanilla ice cream.",
+      "price": 150,
+      "category": "desserts",
+      "rating": 4.8,
+      "reviewCount": 143,
+      "preparationTime": "10 min",
+      "isAvailable": true,
+      "isPopular": true,
+      "extras": [
+        {
+          "id": "e7",
+          "name": "Extra ice cream scoop",
+          "price": 40
+        }
+      ]
+    },
+    {
+      "id": "f19",
+      "restaurantId": "r6",
+      "restaurantName": "Sweet Tooth Desserts",
+      "name": "Belgian Waffle",
+      "image": "https://images.unsplash.com/photo-1562376552-0d160a2f238d?w=700&q=70&auto=format&fit=crop",
+      "description": "A crisp Belgian waffle topped with maple syrup and seasonal fruit.",
+      "price": 190,
+      "category": "desserts",
+      "rating": 4.6,
+      "reviewCount": 77,
+      "preparationTime": "12 min",
+      "isAvailable": true,
+      "isPopular": false,
+      "extras": [
+        {
+          "id": "e7",
+          "name": "Extra ice cream scoop",
+          "price": 40
+        }
+      ]
+    }
+  ],
+  "reviews": [
+    {
+      "id": "rev1",
+      "restaurantId": "r1",
+      "author": "Tanjila R.",
+      "rating": 5,
+      "comment": "The smoky beef burger is worth every taka. Always hot on arrival.",
+      "daysAgo": 2
+    },
+    {
+      "id": "rev2",
+      "restaurantId": "r1",
+      "author": "Fahim K.",
+      "rating": 4,
+      "comment": "Great wings, though delivery took a bit longer during rush hour.",
+      "daysAgo": 6
+    },
+    {
+      "id": "rev3",
+      "restaurantId": "r1",
+      "author": "Nusrat J.",
+      "rating": 5,
+      "comment": "My go-to order between classes. Never disappoints.",
+      "daysAgo": 11
+    },
+    {
+      "id": "rev4",
+      "restaurantId": "r2",
+      "author": "Rakib H.",
+      "rating": 5,
+      "comment": "Best kacchi near campus, hands down. Meat was so tender.",
+      "daysAgo": 1
+    },
+    {
+      "id": "rev5",
+      "restaurantId": "r2",
+      "author": "Mahin A.",
+      "rating": 5,
+      "comment": "Ordered for a group study session — everyone loved it.",
+      "daysAgo": 4
+    },
+    {
+      "id": "rev6",
+      "restaurantId": "r2",
+      "author": "Sabrina I.",
+      "rating": 4,
+      "comment": "Portion size is generous. Borhani is a must-add.",
+      "daysAgo": 9
+    },
+    {
+      "id": "rev7",
+      "restaurantId": "r3",
+      "author": "Imon S.",
+      "rating": 4,
+      "comment": "Solid late-night option after the library closes.",
+      "daysAgo": 3
+    },
+    {
+      "id": "rev8",
+      "restaurantId": "r3",
+      "author": "Priya D.",
+      "rating": 5,
+      "comment": "Loaded fries hit different at 1am.",
+      "daysAgo": 8
+    },
+    {
+      "id": "rev9",
+      "restaurantId": "r4",
+      "author": "Arif M.",
+      "rating": 4,
+      "comment": "Margherita is simple but done right.",
+      "daysAgo": 5
+    },
+    {
+      "id": "rev10",
+      "restaurantId": "r4",
+      "author": "Lubna T.",
+      "rating": 5,
+      "comment": "Wood-fired crust makes a real difference.",
+      "daysAgo": 14
+    },
+    {
+      "id": "rev11",
+      "restaurantId": "r5",
+      "author": "Kamrul B.",
+      "rating": 5,
+      "comment": "Tastes exactly like home cooking. The bhuna is excellent.",
+      "daysAgo": 2
+    },
+    {
+      "id": "rev12",
+      "restaurantId": "r5",
+      "author": "Farzana N.",
+      "rating": 4,
+      "comment": "Reliable daily option, good value for money.",
+      "daysAgo": 10
+    },
+    {
+      "id": "rev13",
+      "restaurantId": "r6",
+      "author": "Shuvo R.",
+      "rating": 5,
+      "comment": "Lava cake is unreal. Order it warm and thank me later.",
+      "daysAgo": 3
+    },
+    {
+      "id": "rev14",
+      "restaurantId": "r6",
+      "author": "Anika F.",
+      "rating": 4,
+      "comment": "Waffles are great, a little pricey for the portion.",
+      "daysAgo": 7
+    }
+  ],
+  "riders": [
+    {
+      "id": "rider1",
+      "userId": "u-rider1",
+      "name": "Rahim Ahmed",
+      "email": "rider@campuseats.test",
+      "phone": "+880 1XXX-XXXXXX",
+      "avatar": null,
+      "vehicleType": "Motorcycle",
+      "vehicleNumber": "DHA-15-2481",
+      "rating": 4.9,
+      "totalDeliveries": 128,
+      "approvalStatus": "APPROVED"
+    },
+    {
+      "id": "rider2",
+      "userId": "u-rider2",
+      "name": "Tanvir Ahmed",
+      "email": "tanvir.ahmed@campus.edu",
+      "phone": "+880 1XXX-XXXXXX",
+      "avatar": null,
+      "vehicleType": "Bicycle",
+      "vehicleNumber": "—",
+      "rating": 4.8,
+      "totalDeliveries": 340,
+      "approvalStatus": "APPROVED"
+    },
+    {
+      "id": "rider3",
+      "userId": "u-rider3",
+      "name": "Mizanur Rahman",
+      "email": "mizanur.rahman@campus.edu",
+      "phone": "+880 1XXX-XXXXXX",
+      "avatar": null,
+      "vehicleType": "Motorcycle",
+      "vehicleNumber": "DHA-11-7723",
+      "rating": 4.7,
+      "totalDeliveries": 512,
+      "approvalStatus": "APPROVED"
+    },
+    {
+      "id": "rider4",
+      "userId": "u-rider4",
+      "name": "Habibur Rahman",
+      "email": "habibur.rahman@campus.edu",
+      "phone": "+880 1XXX-XXXXXX",
+      "avatar": null,
+      "vehicleType": "Bicycle",
+      "vehicleNumber": "—",
+      "rating": 4.2,
+      "totalDeliveries": 88,
+      "approvalStatus": "BLOCKED"
+    },
+    {
+      "id": "rider5",
+      "userId": "u-rider5",
+      "name": "Sajidul Islam",
+      "email": "sajidul.islam@campus.edu",
+      "phone": "+880 1XXX-XXXXXX",
+      "avatar": null,
+      "vehicleType": "Bicycle",
+      "vehicleNumber": "—",
+      "rating": 0,
+      "totalDeliveries": 0,
+      "approvalStatus": "PENDING"
+    },
+    {
+      "id": "rider6",
+      "userId": "u-rider6",
+      "name": "Kamrul Hasan",
+      "email": "kamrul.hasan@campus.edu",
+      "phone": "+880 1XXX-XXXXXX",
+      "avatar": null,
+      "vehicleType": "Motorcycle",
+      "vehicleNumber": "DHA-22-1190",
+      "rating": 0,
+      "totalDeliveries": 0,
+      "approvalStatus": "PENDING"
+    }
+  ],
+  "addresses": [
+    {
+      "id": "addr1",
+      "label": "Hostel",
+      "line": "Hostel Block C, Room 214",
+      "area": "Central Hostel Zone",
+      "city": "Campus Town",
+      "details": "Ask the gatekeeper for Block C",
+      "isDefault": true
+    },
+    {
+      "id": "addr2",
+      "label": "University",
+      "line": "CSE Building, 3rd Floor Lab",
+      "area": "Main Campus",
+      "city": "Campus Town",
+      "details": "",
+      "isDefault": false
+    }
+  ]
+}

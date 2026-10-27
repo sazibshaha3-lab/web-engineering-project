@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { MapPin, Wallet2 } from "lucide-react";
 import Button from "../common/Button";
 import OrderStatusBadge from "../order/OrderStatusBadge";
-import { currentCustomer } from "../../data/users";
 
 const paymentLabels = { cod: "Cash on Delivery", online: "Online Payment" };
 
@@ -21,7 +20,7 @@ export default function RestaurantOrderCard({ order }) {
     <div className="rorder-card">
       <div className="rorder-card__top">
         <div>
-          <p className="rorder-card__id">{order.id} · {currentCustomer.name}</p>
+          <p className="rorder-card__id">{order.id} · {order.customer?.name || "Customer"}</p>
           <p className="rorder-card__meta">
             {itemCount} item{itemCount > 1 ? "s" : ""} ·{" "}
             {new Date(order.createdAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}

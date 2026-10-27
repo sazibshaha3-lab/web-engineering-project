@@ -38,17 +38,20 @@ export default function RiderProfileForm({ onDone }) {
     return Object.keys(next).length === 0;
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     if (!validate()) return;
 
     setSaving(true);
-    setTimeout(() => {
-      updateRiderProfile(form);
-      setSaving(false);
-      toast?.showToast("Profile updated successfully", "success");
-      onDone?.();
-    }, 500);
+    const result = await updateRiderProfile(form);
+    setSaving(false);
+
+    if (result?.success === false) {
+      toast?.showToast(result.message, "error");
+      return;
+    }
+    toast?.showToast("Profile updated successfully", "success");
+    onDone?.();
   }
 
   return (

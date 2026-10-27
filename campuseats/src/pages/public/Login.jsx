@@ -7,8 +7,9 @@ import PasswordInput from "../../components/auth/PasswordInput";
 import Input from "../../components/forms/Input";
 import Button from "../../components/common/Button";
 import InlineMessage from "../../components/common/InlineMessage";
+import GoogleSignInButton from "../../components/auth/GoogleSignInButton";
 import { useAuth } from "../../context/AuthContext";
-import { isValidEmailOrPhone } from "../../utils/validators";
+import { isValidEmail } from "../../utils/validators";
 import "./Auth.css";
 
 const DEMO_ACCOUNTS = [
@@ -17,11 +18,12 @@ const DEMO_ACCOUNTS = [
   { role: "rider", label: "Rider", email: "rider@campuseats.test", password: "Rider123!", icon: Bike },
   { role: "admin", label: "Admin", email: "admin@campuseats.test", password: "Admin123!", icon: ShieldCheck },
 ];
+const showDemoLogins = import.meta.env.DEV || import.meta.env.VITE_SHOW_DEMO_LOGINS === "true";
 
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { loginMock } = useAuth();
+  const { loginMock, loginWithGoogle } = useAuth();
   const redirectTo = location.state?.from;
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
@@ -37,8 +39,8 @@ export default function Login() {
 
   function validate() {
     const next = {};
-    if (!form.email.trim()) next.email = "Enter your email or phone number.";
-    else if (!isValidEmailOrPhone(form.email)) next.email = "Enter a valid email or phone number.";
+    if (!form.email.trim()) next.email = "Enter your email address.";
+    else if (!isValidEmail(form.email)) next.email = "Enter a valid email address.";
     if (!form.password) next.password = "Enter your password.";
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -48,8 +50,8 @@ export default function Login() {
     setStatus("loading");
     setFormError("");
 
-    setTimeout(() => {
-      const result = loginMock(email, password);
+      setTimeout(async () => {
+      const result = await loginMock(email, password);
       if (result.success) {
         setStatus("success");
         setTimeout(() => {
@@ -64,6 +66,24 @@ export default function Login() {
         setFormError(result.message);
       }
     }, 900);
+  }
+
+  async function handleGoogleCredential(credential) {
+    if (status === "loading") return;
+    setStatus("loading");
+    setFormError("");
+    const result = await loginWithGoogle(credential);
+    if (!result.success) {
+      setStatus("idle");
+      setFormError(result.message);
+      return;
+    }
+
+    setStatus("success");
+    if (result.role === "restaurant") navigate("/restaurant");
+    else if (result.role === "rider") navigate("/rider");
+    else if (result.role === "admin") navigate("/admin");
+    else navigate(redirectTo && redirectTo.startsWith("/customer") ? redirectTo : "/customer");
   }
 
   function handleSubmit(e) {
@@ -91,8 +111,8 @@ export default function Login() {
         <InlineMessage tone="error">{formError}</InlineMessage>
 
         <Input
-          label="Email or phone number"
-          type="text"
+          label="Email address"
+          type="email"
           placeholder="you@campus.edu"
           icon={Mail}
           value={form.email}
@@ -121,7 +141,11 @@ export default function Login() {
         </Button>
       </form>
 
-      <div className="demo-accounts">
+      <div className="auth-social-divider"><span>or continue with</span></div>
+      <GoogleSignInButton onCredential={handleGoogleCredential} disabled={status === "loading"} />
+      <p className="google-signin__hint">New Google accounts are created as customer accounts.</p>
+
+      {showDemoLogins && <div className="demo-accounts">
         <div className="demo-accounts__divider">
           <span>or explore a demo account</span>
         </div>
@@ -148,10 +172,10 @@ export default function Login() {
             </button>
           ))}
         </div>
-      </div>
+      </div>}
 
       <p className="auth-form__footer">
-        New to CampusEats? <Link to="/register">Create an account</Link>
+        New to CampusEats? <Link to="/register" state={{ from: redirectTo }}>Create an account</Link>
       </p>
     </AuthLayout>
   );

@@ -14,10 +14,11 @@ import { sortOptions, ratingOptions, deliveryTimeOptions, sortRestaurants, avgDe
 import "./Restaurants.css";
 
 export default function Restaurants() {
-  const { restaurants } = useRestaurantData();
+  const { restaurants, foods, loading: dataLoading } = useRestaurantData();
   const [params, setParams] = useSearchParams();
   const activeCategory = params.get("category") || "all";
-  const [query, setQuery] = useState("");
+  const query = params.get("q") || "";
+  const location = params.get("location") || "";
   const [loading, setLoading] = useState(true);
   const [openOnly, setOpenOnly] = useState(false);
   const [minRating, setMinRating] = useState("any");
@@ -30,22 +31,38 @@ export default function Restaurants() {
     return () => clearTimeout(t);
   }, [activeCategory]);
 
+  const isLoading = loading || dataLoading;
+
   const filtered = useMemo(() => {
     let list = restaurants.filter((r) => {
+      const restaurantFoods = foods.filter((food) => food.restaurantId === String(r.id));
+      const categoryName = categories.find((c) => c.id === activeCategory)?.name.toLowerCase();
       const matchesCategory =
         activeCategory === "all" ||
         r.category.toLowerCase().includes(activeCategory.toLowerCase()) ||
-        categories.find((c) => c.id === activeCategory)?.name.toLowerCase() === r.category.toLowerCase();
-      const matchesQuery = r.name.toLowerCase().includes(query.toLowerCase());
+        categoryName === r.category.toLowerCase() ||
+        restaurantFoods.some((food) => food.category?.toLowerCase() === activeCategory);
+      const normalizedQuery = query.trim().toLowerCase();
+      const matchesQuery = !normalizedQuery ||
+        [r.name, r.category, r.description, r.address].some((value) => value?.toLowerCase().includes(normalizedQuery)) ||
+        restaurantFoods.some((food) => [food.name, food.description, food.category].some((value) => value?.toLowerCase().includes(normalizedQuery)));
+      const matchesLocation = !location.trim() || r.address?.toLowerCase().includes(location.trim().toLowerCase());
       const matchesOpen = !openOnly || r.isOpen;
       const matchesRating = minRating === "any" || r.rating >= parseFloat(minRating);
       const matchesTime = maxDeliveryTime === "any" || avgDeliveryMinutes(r.deliveryTime) <= parseFloat(maxDeliveryTime);
-      return matchesCategory && matchesQuery && matchesOpen && matchesRating && matchesTime;
+      return matchesCategory && matchesQuery && matchesLocation && matchesOpen && matchesRating && matchesTime;
     });
     return sortRestaurants(list, sortBy);
-  }, [activeCategory, query, openOnly, minRating, maxDeliveryTime, sortBy, restaurants]);
+  }, [activeCategory, query, location, openOnly, minRating, maxDeliveryTime, sortBy, restaurants, foods]);
 
-  const filtersActive = query || openOnly || minRating !== "any" || maxDeliveryTime !== "any" || activeCategory !== "all";
+  const filtersActive = query || location || openOnly || minRating !== "any" || maxDeliveryTime !== "any" || activeCategory !== "all";
+
+  function updateSearchParam(key, value) {
+    const next = new URLSearchParams(params);
+    if (value) next.set(key, value);
+    else next.delete(key);
+    setParams(next, { replace: true });
+  }
 
   return (
     <div className="fade-in">
@@ -57,13 +74,13 @@ export default function Restaurants() {
       />
 
       <div style={{ maxWidth: 460, marginBottom: "var(--space-5)" }}>
-        <CustomerSearch value={query} onChange={setQuery} placeholder="Search restaurants or cuisines" />
+        <CustomerSearch value={query} onChange={(value) => updateSearchParam("q", value)} placeholder="Search food, restaurants or cuisines" />
       </div>
 
       <div className="restaurants-page__filters">
         <button
           className={`restaurants-page__chip ${activeCategory === "all" ? "is-active" : ""}`}
-          onClick={() => setParams({})}
+          onClick={() => updateSearchParam("category", "")}
         >
           All
         </button>
@@ -71,7 +88,7 @@ export default function Restaurants() {
           <button
             key={cat.id}
             className={`restaurants-page__chip ${activeCategory === cat.id ? "is-active" : ""}`}
-            onClick={() => setParams({ category: cat.id })}
+            onClick={() => updateSearchParam("category", cat.id)}
           >
             {cat.name}
           </button>
@@ -111,7 +128,7 @@ export default function Restaurants() {
 
       <p className="restaurants-page__count">{filtered.length} restaurant{filtered.length === 1 ? "" : "s"} found</p>
 
-      {loading ? (
+      {isLoading ? (
         <div className="grid grid--restaurants">
           {Array.from({ length: 6 }).map((_, i) => (
             <SkeletonCard key={i} />

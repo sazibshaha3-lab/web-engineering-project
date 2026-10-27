@@ -6,7 +6,6 @@ import RestaurantOrderCard from "../../components/restaurant/RestaurantOrderCard
 import RestaurantEmptyState from "../../components/restaurant/RestaurantEmptyState";
 import { useRestaurantData } from "../../context/RestaurantContext";
 import { useOrders } from "../../context/OrderContext";
-import { currentCustomer } from "../../data/users";
 import "./RestaurantOrders.css";
 
 const tabs = [
@@ -37,7 +36,7 @@ export default function RestaurantOrders() {
     return restaurantOrders.filter((o) => {
       const matchesTab = !activeTab.statuses || activeTab.statuses.includes(o.status);
       const matchesQuery =
-        !q || o.id.toLowerCase().includes(q) || currentCustomer.name.toLowerCase().includes(q);
+        !q || o.id.toLowerCase().includes(q) || (o.customer?.name || "").toLowerCase().includes(q);
       return matchesTab && matchesQuery;
     });
   }, [restaurantOrders, activeTab, query]);

@@ -3,7 +3,6 @@ import Avatar from "../common/Avatar";
 import AdminStatusBadge from "./AdminStatusBadge";
 import ApprovalActionButtons from "./ApprovalActionButtons";
 import { useAdmin } from "../../context/AdminContext";
-import { LIVE_RIDER_ID } from "../../data/riders";
 
 export default function RiderManagementTable({ riders }) {
   const { approveRider, rejectRider, blockRider, unblockRider } = useAdmin();
@@ -31,7 +30,7 @@ export default function RiderManagementTable({ riders }) {
                     <Link className="admin-table__row-link" to={`/admin/riders/${r.id}`}>
                       {r.name}
                     </Link>
-                    {r.id === LIVE_RIDER_ID && <div style={{ fontSize: "0.72rem", color: "var(--color-text-muted)" }}>Demo account</div>}
+                    {r.email === "rider@campuseats.test" && <div style={{ fontSize: "0.72rem", color: "var(--color-text-muted)" }}>Demo account</div>}
                   </div>
                 </div>
               </td>

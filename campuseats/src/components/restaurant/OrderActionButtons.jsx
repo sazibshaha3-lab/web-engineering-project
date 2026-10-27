@@ -21,18 +21,16 @@ export default function OrderActionButtons({ order }) {
 
   const busy = loadingAction !== null;
 
-  function runTransition(nextStatus, successMessage, actionKey) {
+  async function runTransition(nextStatus, successMessage, actionKey) {
     if (busy) return;
     setLoadingAction(actionKey);
-    setTimeout(() => {
-      const result = updateOrderStatus(order.id, nextStatus);
-      setLoadingAction(null);
-      if (result.success) {
-        toast?.showToast(successMessage, "success");
-      } else {
-        toast?.showToast("This order can no longer be updated that way.", "error");
-      }
-    }, 500);
+    const result = await updateOrderStatus(order.id, nextStatus);
+    setLoadingAction(null);
+    if (result.success) {
+      toast?.showToast(successMessage, "success");
+    } else {
+      toast?.showToast(result.message || "This order can no longer be updated that way.", "error");
+    }
   }
 
   function handleReject() {

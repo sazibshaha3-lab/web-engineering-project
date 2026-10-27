@@ -7,20 +7,24 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "e2e": "node e2e/preflight.mjs && playwright test",
+    "e2e:isolated": "node e2e/isolated-backend.mjs"
   },
   "dependencies": {
+    "axios": "^1.20.0",
     "lucide-react": "^0.383.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.30.6"
+    "react-router-dom": "^7.18.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
-    "@vitejs/plugin-react": "^4.7.0",
+    "@vitejs/plugin-react": "^5.2.0",
     "oxlint": "^1.81.0",
-    "vite": "^5.4.21"
+    "vite": "^8.3.1"
   },
   "description": "This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.",
   "main": "vite.config.js",

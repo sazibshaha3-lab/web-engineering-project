@@ -6,7 +6,6 @@ import CategoryScroller from "../../components/customer/CategoryScroller";
 import RestaurantSection from "../../components/customer/RestaurantSection";
 import FoodSection from "../../components/customer/FoodSection";
 import { categories } from "../../data/categories";
-import { currentCustomer } from "../../data/users";
 import { useAuth } from "../../context/AuthContext";
 import { useRestaurantData } from "../../context/RestaurantContext";
 import "./CustomerHome.css";
@@ -21,7 +20,7 @@ export default function CustomerHome() {
   const { user } = useAuth();
   const { restaurants, foods } = useRestaurantData();
   const [query, setQuery] = useState("");
-  const firstName = (user?.name || currentCustomer.name).split(" ")[0];
+  const firstName = user?.name?.trim().split(/\s+/)[0];
 
   const filteredRestaurants = useMemo(() => {
     if (!query.trim()) return restaurants.slice(0, 4);
@@ -31,7 +30,7 @@ export default function CustomerHome() {
   return (
     <div className="fade-in">
       <div className="customer-home__hero">
-        <h1>{user ? `Hi, ${firstName} 👋` : `Good to see you, ${firstName}`}</h1>
+        <h1>{firstName ? `Hi, ${firstName} 👋` : "Good to see you"}</h1>
         <p>What are you craving today? Search restaurants and dishes near your saved locations.</p>
         <CustomerSearch value={query} onChange={setQuery} size="md" />
       </div>

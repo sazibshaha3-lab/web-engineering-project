@@ -86,7 +86,7 @@ export default function Checkout() {
     setPlacing(true);
     setPaymentFailed(false);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       if (paymentMethod === "online") {
         const result = simulateMockPayment(paymentForm);
         if (!result.success) {
@@ -97,20 +97,24 @@ export default function Checkout() {
         }
       }
 
-      const order = createOrder({
+      // Price, delivery fee ar total server nijei hishab kore
+      const result = await createOrder({
         restaurant,
         items,
-        subtotal,
-        deliveryFee,
-        discount,
         deliveryAddress: selectedAddress,
         deliveryInstructions: instructions,
         paymentMethod,
       });
 
+      if (!result.success) {
+        setPlacing(false);
+        toast?.showToast(result.message, "error");
+        return;
+      }
+
       clearCart();
       toast?.showToast("Order placed successfully", "success");
-      navigate("/customer/order-success", { state: { orderId: order.id } });
+      navigate("/customer/order-success", { state: { orderId: result.order.id } });
     }, 1100);
   }
 

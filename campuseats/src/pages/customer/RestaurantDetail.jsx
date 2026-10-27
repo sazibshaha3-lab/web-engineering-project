@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { CheckCircle2, Flame, SearchX, Store } from "lucide-react";
-import { getReviewsByRestaurantId } from "../../data/reviews";
+import { fetchReviews } from "../../services/restaurantApi";
 import { findRestaurantById, getFoodsByRestaurantId } from "../../utils/dataValidation";
 import { foodSortOptions, matchesFoodSearch, sortFoods, groupFoodsByCategory } from "../../utils/foodFilters";
 import { useCart } from "../../context/CartContext";
@@ -27,7 +27,7 @@ export default function RestaurantDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart, getItemQuantity } = useCart();
-  const { restaurants, foods } = useRestaurantData();
+  const { restaurants, foods, loading: dataLoading } = useRestaurantData();
   const toast = useToast();
 
   const [loading, setLoading] = useState(true);
@@ -37,10 +37,23 @@ export default function RestaurantDetail() {
   const [popularOnly, setPopularOnly] = useState(false);
   const [sortBy, setSortBy] = useState("recommended");
   const [openFood, setOpenFood] = useState(null);
+  const [reviews, setReviews] = useState([]);
 
   const restaurant = findRestaurantById(restaurants, id);
   const menu = useMemo(() => getFoodsByRestaurantId(foods, id), [id, foods]);
-  const reviews = useMemo(() => (restaurant ? getReviewsByRestaurantId(restaurant.id) : []), [restaurant]);
+
+  // data ashar wait + ager fake skeleton delay, dutoi ekshathe
+  const isLoading = loading || dataLoading;
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchReviews(id)
+      .then((list) => !cancelled && setReviews(list))
+      .catch(() => !cancelled && setReviews([]));
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
   useEffect(() => {
     setLoading(true);
@@ -89,7 +102,24 @@ export default function RestaurantDetail() {
     }
   }
 
+  const skeleton = (
+    <>
+      <div className="restaurant-detail__hero-skeleton">
+        <SkeletonBlock height="260px" radius="0" />
+      </div>
+      <div className="grid grid--foods" style={{ marginTop: "var(--space-6)" }}>
+        {Array.from({ length: 6 }).map((_, i) => (
+          <SkeletonCard key={i} />
+        ))}
+      </div>
+    </>
+  );
+
   if (!restaurant) {
+    // API data ekhono ashe nai: not-found na dekhiye skeleton dekhai
+    if (isLoading) {
+      return <div className="fade-in">{skeleton}</div>;
+    }
     return (
       <ErrorState
         title="Restaurant not found"
@@ -103,17 +133,8 @@ export default function RestaurantDetail() {
 
   return (
     <div className="fade-in">
-      {loading ? (
-        <>
-          <div className="restaurant-detail__hero-skeleton">
-            <SkeletonBlock height="260px" radius="0" />
-          </div>
-          <div className="grid grid--foods" style={{ marginTop: "var(--space-6)" }}>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <SkeletonCard key={i} />
-            ))}
-          </div>
-        </>
+      {isLoading ? (
+        skeleton
       ) : (
         <>
           <RestaurantHero restaurant={restaurant} />

@@ -1,14 +1,18 @@
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  MapPinned,
-  Compass,
-  ShoppingBag,
   Bike,
   ShieldCheck,
   Wallet,
   Timer,
   Store,
   ArrowRight,
+  MapPin,
+  ShoppingBag,
+  Check,
+  Star,
+  Clock3,
+  MapPinned,
 } from "lucide-react";
 import SearchBar from "../../components/forms/SearchBar";
 import SectionHeader from "../../components/common/SectionHeader";
@@ -22,24 +26,19 @@ import "./Home.css";
 
 const steps = [
   {
-    icon: MapPinned,
-    title: "Choose your location",
-    desc: "Drop a pin on your hostel block, hall or apartment so we know where to send your order.",
-  },
-  {
-    icon: Compass,
-    title: "Discover food",
-    desc: "Browse campus restaurants and mess kitchens by cuisine, rating or how fast they deliver.",
+    icon: Store,
+    title: "Choose a restaurant",
+    desc: "Explore nearby restaurants and mess kitchens, then pick a place that fits your craving.",
   },
   {
     icon: ShoppingBag,
-    title: "Place your order",
-    desc: "Build your cart, pick a delivery time, and confirm — no back-and-forth phone calls.",
+    title: "Choose your food",
+    desc: "Pick your dishes, customize them, and add everything you want to your cart.",
   },
   {
     icon: Bike,
-    title: "Get it delivered",
-    desc: "A nearby rider picks it up and brings it straight to your door, tracked the whole way.",
+    title: "Track your delivery",
+    desc: "Place your order and follow it from the kitchen to your door.",
   },
 ];
 
@@ -54,6 +53,58 @@ const values = [
 
 export default function Home() {
   const { restaurants, foods } = useRestaurantData();
+  const howItWorksRef = useRef(null);
+  const [howItWorksVisible, setHowItWorksVisible] = useState(false);
+  const [activeHeroSlide, setActiveHeroSlide] = useState(0);
+  const [heroPaused, setHeroPaused] = useState(false);
+
+  const heroSlides = useMemo(() => {
+    const availableFoods = foods.filter((food) => food.isAvailable && food.image);
+    const slides = [];
+    const usedImages = new Set();
+
+    // Show a mix of dishes when possible, then fill any remaining spots with popular items.
+    for (const food of [...availableFoods].sort((a, b) => Number(b.isPopular) - Number(a.isPopular))) {
+      if (slides.length >= 6) break;
+      if (usedImages.has(food.image)) continue;
+      if (food.category && slides.some((slide) => slide.category === food.category)) continue;
+      slides.push(food);
+      usedImages.add(food.image);
+    }
+    for (const food of [...availableFoods].sort((a, b) => Number(b.isPopular) - Number(a.isPopular))) {
+      if (slides.length >= 6) break;
+      if (usedImages.has(food.image)) continue;
+      slides.push(food);
+      usedImages.add(food.image);
+    }
+
+    return slides.length ? slides : [{ id: "hero-fallback", name: "Campus favourite pizza", image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=900&q=75&auto=format&fit=crop" }];
+  }, [foods]);
+
+  useEffect(() => {
+    setActiveHeroSlide((current) => current % heroSlides.length);
+  }, [heroSlides.length]);
+
+  useEffect(() => {
+    if (heroPaused || heroSlides.length < 2 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
+    const timer = window.setInterval(() => {
+      setActiveHeroSlide((current) => (current + 1) % heroSlides.length);
+    }, 4800);
+    return () => window.clearInterval(timer);
+  }, [heroPaused, heroSlides.length]);
+
+  useEffect(() => {
+    const section = howItWorksRef.current;
+    if (!section || howItWorksVisible) return undefined;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setHowItWorksVisible(true);
+        observer.disconnect();
+      }
+    }, { threshold: 0.18 });
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, [howItWorksVisible]);
   return (
     <>
       <section className="hero">
@@ -80,14 +131,49 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="hero__visual" aria-hidden="true">
+          <div
+            className="hero__visual"
+            role="group"
+            aria-label="Popular dishes"
+            aria-roledescription="carousel"
+            onMouseEnter={() => setHeroPaused(true)}
+            onMouseLeave={() => setHeroPaused(false)}
+            onFocus={() => setHeroPaused(true)}
+            onBlur={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget)) setHeroPaused(false);
+            }}
+          >
             <div className="hero__blob" />
-            <img
-              className="hero__image"
-              src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=900&q=75&auto=format&fit=crop"
-              alt=""
-              loading="eager"
-            />
+            <div className="hero__image-frame">
+              {heroSlides.map((slide, index) => (
+                <img
+                  key={slide.id ?? slide.image}
+                  className={`hero__image ${index === activeHeroSlide ? "is-active" : ""}`}
+                  src={slide.image}
+                  alt={slide.name}
+                  loading={index === 0 ? "eager" : "lazy"}
+                  fetchPriority={index === 0 ? "high" : "auto"}
+                  aria-hidden={index !== activeHeroSlide}
+                />
+              ))}
+              {heroSlides.length > 1 && (
+                <div className="hero__slide-dots" role="group" aria-label="Choose a featured dish">
+                  {heroSlides.map((slide, index) => (
+                    <button
+                      key={slide.id ?? slide.image}
+                      type="button"
+                      className={`hero__slide-dot ${index === activeHeroSlide ? "is-active" : ""}`}
+                      aria-label={`Show ${slide.name}`}
+                      aria-pressed={index === activeHeroSlide}
+                      onClick={() => setActiveHeroSlide(index)}
+                    />
+                  ))}
+                </div>
+              )}
+              {heroSlides[activeHeroSlide]?.name && (
+                <span className="hero__slide-caption">{heroSlides[activeHeroSlide].name}</span>
+              )}
+            </div>
             <div className="hero__floating-card hero__floating-card--top">
               <Bike size={18} strokeWidth={2} />
               <div>
@@ -148,21 +234,57 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="section section--steps">
+      <section className="section section--steps" ref={howItWorksRef}>
         <div className="container">
-          <SectionHeader title="How CampusEats works" description="From craving to doorstep in four simple steps." />
-          <ol className="steps">
+          <div className="steps-heading">
+            <span className="steps-heading__eyebrow">Simple from start to finish</span>
+            <h2>How CampusEats works</h2>
+            <p>From your first browse to a meal at your door, ordering takes just a few steps.</p>
+          </div>
+          <ol className={`steps ${howItWorksVisible ? "is-visible" : ""}`}>
             {steps.map((step, i) => (
               <li key={step.title} className="steps__item">
-                <span className="steps__number">{String(i + 1).padStart(2, "0")}</span>
-                <span className="steps__icon">
-                  <step.icon size={22} strokeWidth={1.8} />
-                </span>
-                <h3>{step.title}</h3>
-                <p>{step.desc}</p>
+                <div className={`steps__art steps__art--${i + 1}`} aria-hidden="true">
+                  {i === 0 && (
+                    <>
+                      <span className="steps__art-orbit" />
+                      <span className="steps__restaurant-card steps__restaurant-card--back"><Store size={22} /></span>
+                      <span className="steps__restaurant-card steps__restaurant-card--front"><Store size={25} /><span className="steps__stars"><Star size={12} fill="currentColor" /> 4.8 · Open</span></span>
+                      <span className="steps__pin"><MapPin size={25} fill="currentColor" /></span>
+                    </>
+                  )}
+                  {i === 1 && (
+                    <>
+                      <span className="steps__phone">
+                        <span className="steps__phone-notch" />
+                        <span className="steps__food-row"><i /><b /><em>৳180</em></span>
+                        <span className="steps__food-row"><i /><b /><em>৳240</em></span>
+                        <span className="steps__food-row"><i /><b /><em>৳120</em></span>
+                      </span>
+                      <span className="steps__cart-bubble"><ShoppingBag size={21} /><Check size={13} /></span>
+                      <span className="steps__price-bubble">Your picks</span>
+                    </>
+                  )}
+                  {i === 2 && (
+                    <>
+                      <span className="steps__route"><i /><i /><i /></span>
+                      <span className="steps__delivery-pin steps__delivery-pin--start"><Store size={19} /></span>
+                      <span className="steps__rider"><Bike size={54} strokeWidth={1.6} /></span>
+                      <span className="steps__delivery-pin steps__delivery-pin--end"><MapPin size={21} fill="currentColor" /></span>
+                      <span className="steps__eta"><Clock3 size={14} /> On the way</span>
+                    </>
+                  )}
+                </div>
+                <div className="steps__copy">
+                  <span className="steps__number">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="steps__icon"><step.icon size={19} strokeWidth={1.9} /></span>
+                  <h3>{step.title}</h3>
+                  <p>{step.desc}</p>
+                </div>
               </li>
             ))}
           </ol>
+          <Link to="/customer/restaurants" className="steps__cta">Explore restaurants <ArrowRight size={17} /></Link>
         </div>
       </section>
 
@@ -179,6 +301,50 @@ export default function Home() {
                 <p>{v.desc}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="partnership-section" id="partnerships">
+        <div className="container">
+          <div className="partnership-section__heading">
+            <span>Grow with CampusEats</span>
+            <h2>Want to join our community?</h2>
+            <p>Deliver with us or bring your restaurant to hungry students nearby.</p>
+          </div>
+          <div className="partnership-grid">
+            <article className="partnership-card">
+              <img
+                src="https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=1100&q=80&auto=format&fit=crop"
+                alt="Motorcycle ready for a delivery ride"
+                loading="lazy"
+              />
+              <div className="partnership-card__scrim" />
+              <div className="partnership-card__content">
+                <span>Delivery partners</span>
+                <h3>Join as Rider</h3>
+                <p>Choose your hours and deliver around campus.</p>
+                <Link to="/register" state={{ role: "rider" }} className="partnership-card__button">
+                  Join Now <ArrowRight size={19} />
+                </Link>
+              </div>
+            </article>
+            <article className="partnership-card">
+              <img
+                src="https://images.unsplash.com/photo-1556761175-b413da4baf72?w=1100&q=80&auto=format&fit=crop"
+                alt="Restaurant partners discussing their business"
+                loading="lazy"
+              />
+              <div className="partnership-card__scrim" />
+              <div className="partnership-card__content">
+                <span>Restaurant partners</span>
+                <h3>Join as Restaurant</h3>
+                <p>Reach more students and manage orders in one place.</p>
+                <Link to="/register" state={{ role: "restaurant_owner" }} className="partnership-card__button">
+                  Join Now <ArrowRight size={19} />
+                </Link>
+              </div>
+            </article>
           </div>
         </div>
       </section>

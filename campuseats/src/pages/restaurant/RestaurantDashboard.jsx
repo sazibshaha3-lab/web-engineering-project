@@ -7,7 +7,7 @@ import RestaurantStatusToggle from "../../components/restaurant/RestaurantStatus
 import RecentOrders from "../../components/restaurant/RecentOrders";
 import { useRestaurantData } from "../../context/RestaurantContext";
 import { useOrders } from "../../context/OrderContext";
-import { currentRestaurantOwner } from "../../data/users";
+import { useAuth } from "../../context/AuthContext";
 import "./RestaurantDashboard.css";
 
 const quickActions = [
@@ -19,6 +19,7 @@ const quickActions = [
 export default function RestaurantDashboard() {
   const { restaurant } = useRestaurantData();
   const { orders } = useOrders();
+  const { user } = useAuth();
 
   const restaurantOrders = useMemo(
     () => orders.filter((o) => o.restaurantId === restaurant?.id),
@@ -43,7 +44,7 @@ export default function RestaurantDashboard() {
 
   return (
     <div className="fade-in">
-      <PageHeader title="Restaurant Dashboard" description={`Welcome back, ${currentRestaurantOwner.ownerName}.`} />
+      <PageHeader title="Restaurant Dashboard" description={user?.name ? `Welcome back, ${user.name}.` : "Manage your restaurant."} />
 
       <RestaurantStatusToggle />
 

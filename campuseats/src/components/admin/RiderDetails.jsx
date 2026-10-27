@@ -4,12 +4,11 @@ import { Badge } from "../common/Badge";
 import AdminStatusBadge from "./AdminStatusBadge";
 import AdminOrderTable from "./AdminOrderTable";
 import AdminEmptyState from "./AdminEmptyState";
-import { LIVE_RIDER_ID } from "../../data/riders";
 
 const ACTIVE_STATUSES = ["READY_FOR_PICKUP", "PICKED_UP", "OUT_FOR_DELIVERY"];
 
 export default function RiderDetails({ rider, orders, isAvailable }) {
-  const isLive = rider.id === LIVE_RIDER_ID;
+  const isLive = rider.email === "rider@campuseats.test";
   const assigned = orders.filter((o) => o.riderId === rider.id && ACTIVE_STATUSES.includes(o.status));
   const history = orders.filter((o) => o.riderId === rider.id && o.status === "DELIVERED");
 

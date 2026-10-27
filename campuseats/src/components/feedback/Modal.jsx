@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import "./Modal.css";
 
@@ -18,7 +19,9 @@ export default function Modal({ open, onClose, title, children, footer, size = "
 
   if (!open) return null;
 
-  return (
+  // Portal: ancestor e animation/transform thakle `position: fixed` oi ancestor er bhitor atke jay
+  // (checkout-section er rise-in animation er karone modal kete jachchhilo). body te render korle ar hoy na.
+  return createPortal(
     <div className="modal-overlay" onMouseDown={onClose}>
       <div
         className={`modal modal--${size}`}
@@ -36,6 +39,7 @@ export default function Modal({ open, onClose, title, children, footer, size = "
         <div className="modal__body">{children}</div>
         {footer && <div className="modal__footer">{footer}</div>}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

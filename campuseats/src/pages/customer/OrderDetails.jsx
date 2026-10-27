@@ -47,9 +47,9 @@ export default function OrderDetails() {
   const canRate = order.status === "DELIVERED";
   const canTrack = isLiveOrderActive(order.status);
 
-  function handleConfirmCancel() {
-    const result = cancelOrder(order.id);
+  async function handleConfirmCancel() {
     setCancelOpen(false);
+    const result = await cancelOrder(order.id);
     if (result.success) {
       toast?.showToast("Order cancelled", "info");
     } else {

@@ -1,0 +1,13 @@
+.company-page { min-height: 52vh; padding-block: var(--space-10) var(--space-16); }
+.company-page__card {
+  max-width: 760px;
+  padding: clamp(var(--space-5), 5vw, var(--space-10));
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+.company-page__card > p { color: var(--color-text-secondary); font: var(--text-body); }
+.company-page__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-6); }
+.company-page__note { margin-top: var(--space-5); font-size: 0.88rem; }
+.company-page__note a { color: var(--color-primary-dark); font-weight: 700; }

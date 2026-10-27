@@ -1,131 +1,214 @@
-import { createContext, useContext, useMemo, useState } from "react";
-import { restaurants as seedRestaurants } from "../data/restaurants";
-import { foods as seedFoods } from "../data/foods";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import api, { apiErrorMessage } from "../services/api";
+import { useAuth } from "./AuthContext";
+import { useToast } from "../components/feedback/ToastContext";
+import { buildCategoryMaps, normalizeFood, normalizeRestaurant, toFoodPayload } from "../services/restaurantApi";
 
 const RestaurantContext = createContext(null);
 
-// The single demo restaurant-owner account (Step 6) manages this restaurant.
-// Matches data/users.js -> currentRestaurantOwner ("Campus Grill House").
-const MY_RESTAURANT_ID = "r1";
+const OK = { success: true };
+const fail = (err, fallback) => ({ success: false, message: apiErrorMessage(err, fallback) });
 
 export function RestaurantDataProvider({ children }) {
-  // This is the live, mutable product catalog for the whole session —
-  // both the customer-facing pages and the restaurant panel read and
-  // write through this single context so changes stay in sync everywhere.
-  // It also doubles as the Admin's restaurant registry (Step 8): every
-  // restaurant — approved, pending, rejected or blocked — lives here,
-  // there is no separate "adminRestaurants" list.
-  const [allRestaurants, setAllRestaurants] = useState(seedRestaurants);
-  const [allFoods, setAllFoods] = useState(seedFoods);
+  const { user } = useAuth();
+  const toast = useToast();
+  const toastRef = useRef(toast);
+  toastRef.current = toast;
+  const notify = (message, tone = "error") => toastRef.current?.showToast(message, tone);
 
-  const restaurant = useMemo(
-    () => allRestaurants.find((r) => r.id === MY_RESTAURANT_ID) || null,
-    [allRestaurants]
-  );
+  const [loading, setLoading] = useState(true);
+  const [maps, setMaps] = useState({ idToSlug: {}, slugToId: {} });
+  const [publicRestaurants, setPublicRestaurants] = useState([]);
+  const [publicFoods, setPublicFoods] = useState([]);
+  const [myRestaurant, setMyRestaurant] = useState(null);
+  const [myFoods, setMyFoods] = useState([]);
+  const [adminRestaurants, setAdminRestaurants] = useState([]);
 
-  const menuItems = useMemo(
-    () => allFoods.filter((f) => f.restaurantId === MY_RESTAURANT_ID),
-    [allFoods]
-  );
+  // ---------- Public catalog (approved + not blocked, server-side filtered) ----------
+  const loadPublic = useCallback(async () => {
+    try {
+      const [cats, rests, foods] = await Promise.all([
+        api.get("/categories"),
+        api.get("/restaurants"),
+        api.get("/foods"),
+      ]);
+      const m = buildCategoryMaps(cats.data);
+      setMaps(m);
+      setPublicRestaurants(rests.data.map(normalizeRestaurant));
+      setPublicFoods(foods.data.map((f) => normalizeFood(f, m.idToSlug)));
+    } catch (err) {
+      notify(apiErrorMessage(err, "Could not load restaurants."));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const categories = useMemo(
-    () => [...new Set(menuItems.map((f) => f.category))],
-    [menuItems]
-  );
+  useEffect(() => {
+    loadPublic();
+  }, [loadPublic]);
 
-  // Customer-facing catalog: only restaurants Admin has approved and not
-  // blocked ever appear for browsing/ordering. Restaurant/Rider/Admin
-  // panels that need every restaurant (approved, pending, rejected,
-  // blocked) read `allRestaurants` instead.
-  const restaurants = useMemo(
-    () => allRestaurants.filter((r) => r.approvalStatus === "APPROVED" && !r.blocked),
-    [allRestaurants]
-  );
+  // ---------- Restaurant owner: own restaurant + full menu ----------
+  const isOwner = user?.role === "restaurant";
+  const mapsReady = Object.keys(maps.idToSlug).length > 0;
 
-  function updateRestaurant(patch) {
-    setAllRestaurants((prev) => prev.map((r) => (r.id === MY_RESTAURANT_ID ? { ...r, ...patch } : r)));
-  }
+  useEffect(() => {
+    if (!isOwner) {
+      setMyRestaurant(null);
+      setMyFoods([]);
+      return;
+    }
+    if (!mapsReady) return;
 
-  function toggleOpen() {
-    setAllRestaurants((prev) =>
-      prev.map((r) => (r.id === MY_RESTAURANT_ID ? { ...r, isOpen: !r.isOpen } : r))
-    );
-  }
+    let cancelled = false;
+    api
+      .get("/owner/restaurant")
+      .then(({ data }) => {
+        if (cancelled) return;
+        const { foods = [], ...rest } = data;
+        const r = { ...normalizeRestaurant(rest), owner: user.name };
+        setMyRestaurant(r);
+        setMyFoods(foods.map((f) => normalizeFood({ ...f, restaurantName: r.name }, maps.idToSlug)));
+      })
+      .catch((err) => !cancelled && notify(apiErrorMessage(err, "Could not load your restaurant.")));
 
-  function addFood(data) {
-    const food = {
-      id: `f${Date.now()}`,
-      restaurantId: MY_RESTAURANT_ID,
-      restaurantName: restaurant?.name || "",
-      rating: 0,
-      reviewCount: 0,
-      isAvailable: true,
-      isPopular: false,
-      extras: [],
-      ...data,
+    return () => {
+      cancelled = true;
     };
-    setAllFoods((prev) => [...prev, food]);
-    return food;
+  }, [isOwner, mapsReady, user?.name]);
+
+  // ---------- Admin: every restaurant (pending / rejected / blocked too) ----------
+  const isAdmin = user?.role === "admin";
+
+  useEffect(() => {
+    if (!isAdmin) {
+      setAdminRestaurants([]);
+      return;
+    }
+    let cancelled = false;
+    api
+      .get("/admin/restaurants")
+      .then(({ data }) => !cancelled && setAdminRestaurants(data.map(normalizeRestaurant)))
+      .catch((err) => !cancelled && notify(apiErrorMessage(err, "Could not load restaurants.")));
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdmin]);
+
+  const restaurants = publicRestaurants;
+  const allRestaurants = isAdmin ? adminRestaurants : publicRestaurants;
+  const menuItems = myFoods;
+  const categories = useMemo(() => [...new Set(myFoods.map((f) => f.category))], [myFoods]);
+
+  // ---------- Restaurant owner actions ----------
+  async function updateRestaurant(patch) {
+    try {
+      const { data } = await api.put("/owner/restaurant", patch);
+      setMyRestaurant((prev) => ({ ...prev, ...normalizeRestaurant(data), owner: prev?.owner ?? "" }));
+      loadPublic();
+      return OK;
+    } catch (err) {
+      return fail(err, "Could not update the restaurant.");
+    }
   }
 
-  // Ownership guard: every mutation below only ever touches a food item
-  // that belongs to the logged-in restaurant owner's own restaurant, even
-  // if a caller somehow passed a foreign foodId.
-  function updateFood(foodId, patch) {
-    setAllFoods((prev) =>
-      prev.map((f) => (f.id === foodId && f.restaurantId === MY_RESTAURANT_ID ? { ...f, ...patch } : f))
-    );
+  async function toggleOpen() {
+    if (!myRestaurant) return;
+    const next = !myRestaurant.isOpen;
+    setMyRestaurant((p) => ({ ...p, isOpen: next }));
+    try {
+      await api.put("/owner/restaurant", { isOpen: next });
+      loadPublic();
+    } catch (err) {
+      setMyRestaurant((p) => ({ ...p, isOpen: !next }));
+      notify(apiErrorMessage(err, "Could not change the restaurant status."));
+    }
   }
 
-  function deleteFood(foodId) {
-    setAllFoods((prev) => prev.filter((f) => !(f.id === foodId && f.restaurantId === MY_RESTAURANT_ID)));
+  async function addFood(data) {
+    try {
+      const { data: created } = await api.post("/owner/foods", toFoodPayload(data, maps.slugToId));
+      const food = normalizeFood({ ...created, restaurantName: myRestaurant?.name }, maps.idToSlug);
+      setMyFoods((prev) => [...prev, food]);
+      loadPublic();
+      return { success: true, food };
+    } catch (err) {
+      return fail(err, "Could not add the food item.");
+    }
   }
 
-  function toggleFoodAvailability(foodId) {
-    setAllFoods((prev) =>
-      prev.map((f) =>
-        f.id === foodId && f.restaurantId === MY_RESTAURANT_ID ? { ...f, isAvailable: !f.isAvailable } : f
-      )
-    );
+  async function updateFood(foodId, patch) {
+    try {
+      const { data: updated } = await api.put(`/owner/foods/${foodId}`, toFoodPayload(patch, maps.slugToId));
+      const food = normalizeFood({ ...updated, restaurantName: myRestaurant?.name }, maps.idToSlug);
+      setMyFoods((prev) => prev.map((f) => (f.id === food.id ? food : f)));
+      loadPublic();
+      return OK;
+    } catch (err) {
+      return fail(err, "Could not update the food item.");
+    }
   }
 
-  function toggleFoodPopular(foodId) {
-    setAllFoods((prev) =>
-      prev.map((f) =>
-        f.id === foodId && f.restaurantId === MY_RESTAURANT_ID ? { ...f, isPopular: !f.isPopular } : f
-      )
-    );
+  async function deleteFood(foodId) {
+    try {
+      await api.delete(`/owner/foods/${foodId}`);
+      setMyFoods((prev) => prev.filter((f) => f.id !== foodId));
+      loadPublic();
+      return OK;
+    } catch (err) {
+      return fail(err, "Could not delete the food item.");
+    }
   }
 
-  // ---- Admin-only actions (Step 8) — operate on the same registry ----
-
-  function approveRestaurant(id) {
-    setAllRestaurants((prev) => prev.map((r) => (r.id === id ? { ...r, approvalStatus: "APPROVED" } : r)));
+  // optimistic toggle: UI sathe sathe bodlay, server fail korle ager obosthay fire jay
+  async function toggleFoodField(foodId, field) {
+    const food = myFoods.find((f) => f.id === foodId);
+    if (!food) return;
+    const next = !food[field];
+    setMyFoods((prev) => prev.map((f) => (f.id === foodId ? { ...f, [field]: next } : f)));
+    try {
+      await api.put(`/owner/foods/${foodId}`, { [field]: next });
+      loadPublic();
+    } catch (err) {
+      setMyFoods((prev) => prev.map((f) => (f.id === foodId ? { ...f, [field]: !next } : f)));
+      notify(apiErrorMessage(err, "Could not update the food item."));
+    }
   }
 
-  function rejectRestaurant(id) {
-    setAllRestaurants((prev) => prev.map((r) => (r.id === id ? { ...r, approvalStatus: "REJECTED" } : r)));
+  const toggleFoodAvailability = (foodId) => toggleFoodField(foodId, "isAvailable");
+  const toggleFoodPopular = (foodId) => toggleFoodField(foodId, "isPopular");
+
+  // ---------- Admin actions ----------
+  async function adminPatch(id, path, body, apply) {
+    const previous = adminRestaurants;
+    setAdminRestaurants((prev) => prev.map((r) => (r.id === id ? { ...r, ...apply } : r)));
+    try {
+      await api.patch(`/admin/restaurants/${id}/${path}`, body);
+      loadPublic();
+    } catch (err) {
+      setAdminRestaurants(previous);
+      notify(apiErrorMessage(err, "Action failed."));
+    }
   }
 
-  function blockRestaurant(id) {
-    setAllRestaurants((prev) => prev.map((r) => (r.id === id ? { ...r, blocked: true } : r)));
-  }
-
-  function unblockRestaurant(id) {
-    setAllRestaurants((prev) => prev.map((r) => (r.id === id ? { ...r, blocked: false } : r)));
-  }
+  const approveRestaurant = (id) =>
+    adminPatch(id, "approval", { approvalStatus: "APPROVED" }, { approvalStatus: "APPROVED" });
+  const rejectRestaurant = (id) =>
+    adminPatch(id, "approval", { approvalStatus: "REJECTED" }, { approvalStatus: "REJECTED" });
+  const blockRestaurant = (id) => adminPatch(id, "blocked", { blocked: true }, { blocked: true });
+  const unblockRestaurant = (id) => adminPatch(id, "blocked", { blocked: false }, { blocked: false });
 
   const value = {
-    // Live catalog — used by customer-facing pages for browsing/validation.
+    loading,
+    // Live catalog — customer-facing pages.
     restaurants,
-    foods: allFoods,
-    // Full registry — used by the Admin panel.
+    foods: publicFoods,
+    // Full registry — Admin panel.
     allRestaurants,
-    // Restaurant-panel-scoped view of the logged-in restaurant.
-    restaurant,
+    // Restaurant-panel-scoped view.
+    restaurant: myRestaurant,
     menuItems,
     categories,
-    isOpen: restaurant?.isOpen ?? false,
+    isOpen: myRestaurant?.isOpen ?? false,
     updateRestaurant,
     toggleOpen,
     addFood,
@@ -137,6 +220,7 @@ export function RestaurantDataProvider({ children }) {
     rejectRestaurant,
     blockRestaurant,
     unblockRestaurant,
+    reload: loadPublic,
   };
 
   return <RestaurantContext.Provider value={value}>{children}</RestaurantContext.Provider>;

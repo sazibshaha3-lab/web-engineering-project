@@ -12,10 +12,13 @@ export default function useGuardedAction(delay = 450) {
     if (runningRef.current) return;
     runningRef.current = true;
     setBusyKey(key);
-    setTimeout(() => {
-      action();
-      runningRef.current = false;
-      setBusyKey(null);
+    setTimeout(async () => {
+      try {
+        await action();
+      } finally {
+        runningRef.current = false;
+        setBusyKey(null);
+      }
     }, delay);
   }
 

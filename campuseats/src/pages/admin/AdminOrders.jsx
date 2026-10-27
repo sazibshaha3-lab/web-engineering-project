@@ -8,7 +8,6 @@ import AdminEmptyState from "../../components/admin/AdminEmptyState";
 import AdminPagination from "../../components/admin/AdminPagination";
 import { SkeletonRow } from "../../components/common/SkeletonLoader";
 import { useAdmin } from "../../context/AdminContext";
-import { currentCustomer } from "../../data/users";
 import usePagination from "../../hooks/usePagination";
 import "./admin-shared.css";
 
@@ -34,7 +33,7 @@ export default function AdminOrders() {
           !q ||
           o.id.toLowerCase().includes(q) ||
           o.restaurantName.toLowerCase().includes(q) ||
-          currentCustomer.name.toLowerCase().includes(q) ||
+          (o.customer?.name || "").toLowerCase().includes(q) ||
           riderName.toLowerCase().includes(q);
         return matchesTab && matchesQuery;
       });

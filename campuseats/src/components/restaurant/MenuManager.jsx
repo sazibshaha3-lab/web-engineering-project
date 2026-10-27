@@ -40,19 +40,22 @@ export default function MenuManager({ formOpen, onCloseForm, editingFood, onEdit
     });
   }, [menuItems, query, filter]);
 
-  function handleSaveFood(data) {
-    if (editingFood) {
-      updateFood(editingFood.id, data);
-      toast?.showToast("Food item updated", "success");
-    } else {
-      addFood(data);
-      toast?.showToast("Food item added", "success");
+  async function handleSaveFood(data) {
+    const result = editingFood ? await updateFood(editingFood.id, data) : await addFood(data);
+    if (result?.success === false) {
+      toast?.showToast(result.message, "error");
+      return;
     }
+    toast?.showToast(editingFood ? "Food item updated" : "Food item added", "success");
     onCloseForm();
   }
 
-  function handleConfirmDelete() {
-    deleteFood(deletingFood.id);
+  async function handleConfirmDelete() {
+    const result = await deleteFood(deletingFood.id);
+    if (result?.success === false) {
+      toast?.showToast(result.message, "error");
+      return;
+    }
     toast?.showToast("Food item deleted", "info");
     setDeletingFood(null);
   }

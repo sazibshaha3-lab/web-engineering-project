@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import OrderStatusBadge from "../order/OrderStatusBadge";
-import { currentCustomer } from "../../data/users";
 import { useAdmin } from "../../context/AdminContext";
 
 export default function AdminOrderTable({ orders }) {
@@ -33,7 +32,7 @@ export default function AdminOrderTable({ orders }) {
                   {o.id}
                 </Link>
               </td>
-              <td data-label="Customer">{currentCustomer.name}</td>
+              <td data-label="Customer">{o.customer?.name || "Customer"}</td>
               <td data-label="Restaurant">{o.restaurantName}</td>
               <td data-label="Rider">{riderName(o.riderId)}</td>
               <td data-label="Amount">৳{o.total}</td>

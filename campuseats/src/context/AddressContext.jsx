@@ -1,41 +1,81 @@
-import { createContext, useContext, useMemo, useState } from "react";
-import { initialAddresses } from "../data/addresses";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import api, { apiErrorMessage } from "../services/api";
+import { useAuth } from "./AuthContext";
+import { normalizeAddress, toAddressPayload } from "../services/orderApi";
 
 const AddressContext = createContext(null);
 
+const fail = (err, fallback) => ({ success: false, message: apiErrorMessage(err, fallback) });
+
 export function AddressProvider({ children }) {
-  const [addresses, setAddresses] = useState(initialAddresses);
-  const [selectedId, setSelectedId] = useState(
-    initialAddresses.find((a) => a.isDefault)?.id || initialAddresses[0]?.id || null
-  );
+  const { user } = useAuth();
+  const [addresses, setAddresses] = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState("");
+  const isCustomer = user?.role === "customer";
 
-  function addAddress(data) {
-    const id = `addr${Date.now()}`;
-    const isFirst = addresses.length === 0;
-    const newAddress = { id, isDefault: isFirst, ...data };
-    setAddresses((prev) => [...prev, newAddress]);
-    setSelectedId(id);
-    return newAddress;
+  // Prefer the newly created address, otherwise keep the current selection,
+  // then fall back to the default address and finally the first address.
+  const load = useCallback(async (preferId) => {
+    setLoadError("");
+    try {
+      const { data } = await api.get("/addresses");
+      const list = data.map(normalizeAddress);
+      setAddresses(list);
+      setSelectedId((current) => {
+        const wanted = preferId ?? current;
+        if (wanted && list.some((a) => a.id === wanted)) return wanted;
+        return list.find((a) => a.isDefault)?.id ?? list[0]?.id ?? null;
+      });
+      return list;
+    } catch (err) {
+      setLoadError(apiErrorMessage(err, "Could not load your addresses."));
+      throw err;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isCustomer) {
+      setAddresses([]);
+      setSelectedId(null);
+      setIsLoading(false);
+      setLoadError("");
+      return;
+    }
+    setIsLoading(true);
+    load().catch(() => {}).finally(() => setIsLoading(false));
+  }, [isCustomer, user?.id, load]);
+
+  async function addAddress(data) {
+    try {
+      const { data: created } = await api.post("/addresses", toAddressPayload(data));
+      const address = normalizeAddress(created);
+      await load(address.id);
+      return { success: true, address };
+    } catch (err) {
+      return fail(err, "Could not save the address.");
+    }
   }
 
-  function updateAddress(id, data) {
-    setAddresses((prev) => prev.map((a) => (a.id === id ? { ...a, ...data } : a)));
+  async function updateAddress(id, data) {
+    try {
+      await api.put(`/addresses/${id}`, toAddressPayload(data));
+      await load();
+      return { success: true };
+    } catch (err) {
+      return fail(err, "Could not update the address.");
+    }
   }
 
-  function deleteAddress(id) {
-    setAddresses((prev) => {
-      const deleted = prev.find((a) => a.id === id);
-      let next = prev.filter((a) => a.id !== id);
-      // If the deleted address was the default, promote the next one so
-      // there's always exactly one default address (when any remain).
-      if (deleted?.isDefault && next.length > 0 && !next.some((a) => a.isDefault)) {
-        next = next.map((a, i) => (i === 0 ? { ...a, isDefault: true } : a));
-      }
-      if (selectedId === id) {
-        setSelectedId(next[0]?.id || null);
-      }
-      return next;
-    });
+  async function deleteAddress(id) {
+    try {
+      await api.delete(`/addresses/${id}`);
+      await load();
+      return { success: true };
+    } catch (err) {
+      return fail(err, "Could not delete the address.");
+    }
   }
 
   function selectAddress(id) {
@@ -49,6 +89,8 @@ export function AddressProvider({ children }) {
 
   const value = {
     addresses,
+    isLoading,
+    loadError,
     selectedId,
     selectedAddress,
     addAddress,

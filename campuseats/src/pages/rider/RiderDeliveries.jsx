@@ -19,8 +19,8 @@ export default function RiderDeliveries() {
   const requests = getAvailableDeliveries();
   const isApproved = rider.approvalStatus === "APPROVED";
 
-  function handleAccept(orderId) {
-    const result = acceptDelivery(orderId);
+  async function handleAccept(orderId) {
+    const result = await acceptDelivery(orderId);
     if (result.success) {
       toast?.showToast("Delivery accepted", "success");
       navigate(`/rider/deliveries/${orderId}`);

@@ -1,4 +1,4 @@
-import { Home, Building2, School, UtensilsCrossed, MapPin, Pencil, Trash2 } from "lucide-react";
+import { Home, Building2, School, UtensilsCrossed, MapPin, Pencil, Trash2, ExternalLink } from "lucide-react";
 import { Badge } from "../common/Badge";
 import IconButton from "../common/IconButton";
 import "./AddressCard.css";
@@ -11,7 +11,7 @@ const labelIcons = {
   Other: MapPin,
 };
 
-export default function AddressCard({ address, selected, onSelect, onEdit, onDelete }) {
+export default function AddressCard({ address, selected, onSelect, onEdit, onDelete, onSetDefault }) {
   const Icon = labelIcons[address.label] || MapPin;
 
   return (
@@ -37,8 +37,20 @@ export default function AddressCard({ address, selected, onSelect, onEdit, onDel
           {address.area}{address.area && address.city ? ", " : ""}{address.city}
           {address.details ? ` · ${address.details}` : ""}
         </p>
+        {address.latitude != null && address.longitude != null && Number.isFinite(Number(address.latitude)) && Number.isFinite(Number(address.longitude)) && (
+          <a
+            className="address-card__map-link"
+            href={`https://www.google.com/maps/search/?api=1&query=${address.latitude},${address.longitude}`}
+            target="_blank"
+            rel="noreferrer"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <ExternalLink size={13} /> View map pin
+          </a>
+        )}
       </div>
       <div className="address-card__actions" onClick={(e) => e.stopPropagation()}>
+        {!address.isDefault && <button type="button" className="btn btn--ghost btn--sm" onClick={() => onSetDefault(address)}>Set default</button>}
         <IconButton icon={Pencil} label="Edit address" size="sm" onClick={() => onEdit(address)} />
         <IconButton icon={Trash2} label="Delete address" size="sm" onClick={() => onDelete(address)} />
       </div>

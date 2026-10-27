@@ -13,33 +13,29 @@ export default function DeliveryActionButtons({ order }) {
   const [deliveredOpen, setDeliveredOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  async function runAction(fn, successMessage) {
+    setLoading(true);
+    const result = await fn(order.id);
+    setLoading(false);
+    if (result.success) {
+      toast?.showToast(successMessage, "success");
+    } else {
+      toast?.showToast(result.message || "Could not update this delivery.", "error");
+    }
+  }
+
   function handleConfirmPickup() {
     setPickupOpen(false);
-    setLoading(true);
-    setTimeout(() => {
-      const result = markPickedUp(order.id);
-      setLoading(false);
-      if (result.success) toast?.showToast("Order picked up", "success");
-    }, 500);
+    runAction(markPickedUp, "Order picked up");
   }
 
   function handleStartDelivery() {
-    setLoading(true);
-    setTimeout(() => {
-      const result = startDelivery(order.id);
-      setLoading(false);
-      if (result.success) toast?.showToast("Delivery started", "success");
-    }, 500);
+    runAction(startDelivery, "Delivery started");
   }
 
   function handleConfirmDelivered() {
     setDeliveredOpen(false);
-    setLoading(true);
-    setTimeout(() => {
-      const result = markDelivered(order.id);
-      setLoading(false);
-      if (result.success) toast?.showToast("Delivery completed", "success");
-    }, 500);
+    runAction(markDelivered, "Delivery completed");
   }
 
   if (order.status === "READY_FOR_PICKUP") {

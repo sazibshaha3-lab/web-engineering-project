@@ -10,7 +10,7 @@ import { useToast } from "../feedback/ToastContext";
 import "./AddressSection.css";
 
 export default function AddressSection() {
-  const { addresses, selectedId, selectAddress, addAddress, updateAddress, deleteAddress } = useAddresses();
+  const { addresses, selectedId, selectAddress, addAddress, updateAddress, deleteAddress, isLoading, loadError } = useAddresses();
   const toast = useToast();
   const [formOpen, setFormOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
@@ -26,26 +26,40 @@ export default function AddressSection() {
     setFormOpen(true);
   }
 
-  function handleSave(data) {
-    if (editingAddress) {
-      updateAddress(editingAddress.id, data);
-      toast?.showToast("Address updated", "success");
-    } else {
-      addAddress(data);
-      toast?.showToast("Address added", "success");
+  async function handleSave(data) {
+    const result = editingAddress ? await updateAddress(editingAddress.id, data) : await addAddress(data);
+    if (!result.success) {
+      toast?.showToast(result.message, "error");
+      return;
     }
+    toast?.showToast(editingAddress ? "Address updated" : "Address added", "success");
     setFormOpen(false);
   }
 
-  function handleConfirmDelete() {
-    deleteAddress(deletingAddress.id);
+  async function handleConfirmDelete() {
+    const result = await deleteAddress(deletingAddress.id);
+    if (!result.success) {
+      toast?.showToast(result.message, "error");
+      return;
+    }
     toast?.showToast("Address deleted", "info");
     setDeletingAddress(null);
   }
 
-  function handleCurrentLocationDetected(data) {
-    const created = addAddress(data);
-    selectAddress(created.id);
+  async function handleCurrentLocationDetected(data) {
+    const result = await addAddress(data);
+    if (result.success) {
+      selectAddress(result.address.id);
+    } else {
+      toast?.showToast(result.message, "error");
+    }
+    return result;
+  }
+
+  async function handleSetDefault(address) {
+    const result = await updateAddress(address.id, { ...address, isDefault: true });
+    if (result.success) toast?.showToast("Default address updated", "success");
+    else toast?.showToast(result.message, "error");
   }
 
   return (
@@ -54,6 +68,12 @@ export default function AddressSection() {
         <p className="address-section__error">
           <AlertCircle size={15} strokeWidth={2} /> Please select a delivery address
         </p>
+      )}
+
+      {isLoading && <p role="status">Loading addresses...</p>}
+      {loadError && <p role="alert">{loadError}</p>}
+      {!isLoading && !loadError && addresses.length === 0 && (
+        <p className="address-section__error">You have no saved addresses yet. Add an address to continue.</p>
       )}
 
       <CurrentLocationButton
@@ -69,6 +89,7 @@ export default function AddressSection() {
           onSelect={selectAddress}
           onEdit={openEditForm}
           onDelete={setDeletingAddress}
+          onSetDefault={handleSetDefault}
         />
       ))}
 

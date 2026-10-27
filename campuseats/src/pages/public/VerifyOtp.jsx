@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { CheckCircle2 } from "lucide-react";
 import AuthLayout from "../../components/auth/AuthLayout";
 import AuthHeader from "../../components/auth/AuthHeader";
@@ -14,16 +14,18 @@ const RESEND_SECONDS = 60;
 
 export default function VerifyOtp() {
   const navigate = useNavigate();
-  const { pendingSignup, verifyOtpMock } = useAuth();
+  const location = useLocation();
+  const redirectTo = location.state?.from;
+  const { pendingSignup, verifyOtpMock, resendRegistrationOtp } = useAuth();
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [status, setStatus] = useState("idle"); // idle | verifying | success
+  const [verifiedRole, setVerifiedRole] = useState("customer");
   const [seconds, setSeconds] = useState(RESEND_SECONDS);
   const [resendMessage, setResendMessage] = useState("");
   const intervalRef = useRef(null);
 
   const contact = pendingSignup?.maskedEmail || pendingSignup?.maskedPhone || "your registered email";
-  const expired = seconds === 0;
 
   useEffect(() => {
     intervalRef.current = setInterval(() => {
@@ -44,20 +46,21 @@ export default function VerifyOtp() {
     e.preventDefault();
     if (code.length !== 6 || status === "verifying") return;
 
-    if (expired) {
-      setError("This code has expired. Request a new one.");
-      setCode("");
-      return;
-    }
-
     setStatus("verifying");
     setError("");
 
-    setTimeout(() => {
-      const result = verifyOtpMock(code);
+       setTimeout(async () => {
+      const result = await verifyOtpMock(code);
       if (result.success) {
+        setVerifiedRole(result.role || "customer");
         setStatus("success");
-        setTimeout(() => navigate("/customer"), 900);
+        const destination = {
+          customer: redirectTo?.startsWith("/customer") ? redirectTo : "/customer",
+          restaurant: "/restaurant",
+          rider: "/rider",
+          admin: "/admin",
+        }[result.role] || "/customer";
+        setTimeout(() => navigate(destination), 900);
       } else {
         setStatus("idle");
         setError(result.message);
@@ -66,8 +69,14 @@ export default function VerifyOtp() {
     }, 700);
   }
 
-  function handleResend() {
-    if (seconds > 0) return;
+  async function handleResend() {
+    if (seconds > 0 || status === "verifying") return;
+    setError("");
+    const result = await resendRegistrationOtp();
+    if (!result.success) {
+      setError(result.message);
+      return;
+    }
     clearInterval(intervalRef.current);
     setSeconds(RESEND_SECONDS);
     intervalRef.current = setInterval(() => {
@@ -89,7 +98,13 @@ export default function VerifyOtp() {
             <CheckCircle2 size={30} strokeWidth={1.8} />
           </span>
           <h2>You're verified!</h2>
-          <p>Taking you to CampusEats...</p>
+          <p>
+            {verifiedRole === "restaurant" || verifiedRole === "rider"
+              ? verifiedRole === "restaurant"
+                ? "Your restaurant request is waiting for admin approval. Taking you to the status page..."
+                : "Your rider request is waiting for admin approval. Taking you to the status page..."
+              : "Taking you to CampusEats..."}
+          </p>
         </div>
       ) : (
         <>
@@ -101,9 +116,7 @@ export default function VerifyOtp() {
           <form className="auth-form" onSubmit={handleVerify} noValidate>
             <InlineMessage tone="error">{error}</InlineMessage>
             <InlineMessage tone="success">{resendMessage}</InlineMessage>
-            {expired && !error && <InlineMessage tone="error">This code has expired. Tap resend to get a new one.</InlineMessage>}
-
-            <OtpInput length={6} value={code} onChange={handleChange} error={!!error || expired} />
+            <OtpInput length={6} value={code} onChange={handleChange} error={!!error} />
 
             <Button type="submit" fullWidth size="lg" disabled={code.length !== 6} loading={status === "verifying"}>
               {status === "verifying" ? "Verifying..." : "Verify & continue"}
@@ -119,9 +132,7 @@ export default function VerifyOtp() {
               )}
             </div>
 
-            <p className="auth-form__hint">
-              Demo code: <strong>123456</strong>
-            </p>
+            <p className="auth-form__hint">Check your inbox and spam folder for the verification code.</p>
 
             <Link to="/register" className="verify-otp__change">
               Change contact method

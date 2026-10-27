@@ -1,0 +1,17 @@
+.customer-main-content {
+  padding-block: var(--space-4);
+  min-height: 70vh;
+}
+
+@media (min-width: 640px) {
+  .customer-main-content {
+    padding-block: var(--space-6);
+  }
+}
+
+@media (min-width: 900px) {
+  .customer-main-content {
+    padding-block: var(--space-8);
+  }
+}
+
