@@ -28,6 +28,7 @@ class PermissionMatrixTest extends TestCase
         foreach (array_slice($roles, 1) as $role) {
             $users[$role] = User::where('role', $role)->firstOrFail();
         }
+        $users['rider']->rider->update(['is_available' => true]);
         $customer = $users['customer'];
         $orders = [];
         foreach (array_slice($roles, 1) as $role) {
@@ -42,6 +43,7 @@ class PermissionMatrixTest extends TestCase
         }
 
         $public = [
+            'GET api/health/ready', 'POST api/register/send-otp', 'POST api/register/verify-otp',
             'POST api/register', 'POST api/login', 'POST api/login/google', 'GET api/categories', 'GET api/restaurants',
             'GET api/restaurants/{id}', 'GET api/restaurants/{id}/foods', 'GET api/restaurants/{id}/reviews',
             'GET api/foods', 'GET api/foods/{id}',
@@ -64,6 +66,7 @@ class PermissionMatrixTest extends TestCase
                     $url = '/' . preg_replace_callback('/\{([^}]+)\}/', function ($m) use ($customer, $orders, $role) {
                         return match ($m[1]) {
                             'order' => (string) ($orders[$role]->id ?? $orders['customer']->id),
+                            'orderNumber' => (string) ($orders[$role]->order_number ?? $orders['customer']->order_number),
                             'address' => (string) Address::create(['user_id' => $customer->id, 'label' => 'Matrix', 'line' => 'Test address'])->id,
                             'food' => (string) Food::create(['restaurant_id' => 1, 'name' => 'Matrix food', 'price' => 1])->id,
                             'restaurant', 'category', 'rider', 'user', 'id' => '1', default => '1',
@@ -89,7 +92,7 @@ class PermissionMatrixTest extends TestCase
     private function allowedRoles(string $verb, string $uri, bool $public): array
     {
         if ($public) return ['customer', 'restaurant_owner', 'rider', 'admin'];
-        if (in_array($uri, ['api/me', 'api/logout'], true) || ($uri === 'api/me' && $verb === 'PUT') || ($uri === 'api/orders' && $verb === 'GET') || ($uri === 'api/orders/{order}' && $verb === 'GET')) {
+        if (in_array($uri, ['api/me', 'api/logout'], true) || ($uri === 'api/me' && $verb === 'PUT') || ($uri === 'api/orders' && $verb === 'GET') || ($uri === 'api/orders/{order}' && $verb === 'GET') || ($uri === 'api/orders/by-number/{orderNumber}' && $verb === 'GET')) {
             return ['customer', 'restaurant_owner', 'rider', 'admin'];
         }
         if ($uri === 'api/orders/{order}/status') return ['restaurant_owner', 'rider', 'admin'];

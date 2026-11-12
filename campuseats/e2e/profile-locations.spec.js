@@ -30,7 +30,7 @@ async function addFoodAndOpenCheckout(page) {
   const add = page.locator("button.food-card__add:not([disabled])");
   await expect(add.first()).toBeVisible();
   await add.first().click();
-  await page.getByRole("link", { name: "Cart", exact: true }).click();
+  await page.getByRole("banner").getByRole("link", { name: /^Cart/ }).click();
   await page.getByRole("button", { name: /Proceed to Checkout/ }).click();
 }
 
@@ -39,17 +39,17 @@ test("new customer profile changes persist through reload and a fresh login", as
   const email = `profile.${unique}@e2e.test`;
   await registerCustomer(page, name, email);
   const header = page.locator("header.customer-header");
-  await expect(header.getByText(name)).toBeVisible();
+  await expect(header.locator(".customer-header__user-name")).toHaveText(name);
 
   await page.goto("/customer/profile");
   await page.getByLabel("Full name").fill(`${name} Updated`);
   await page.getByLabel("Phone number").fill("+8801812345678");
   await page.getByRole("button", { name: "Save changes" }).click();
-  await expect(header.getByText(`${name} Updated`)).toBeVisible();
+  await expect(header.locator(".customer-header__user-name")).toHaveText(`${name} Updated`);
   await expect(page.getByText("Profile updated")).toBeVisible();
 
   await page.reload();
-  await expect(header.getByText(`${name} Updated`)).toBeVisible();
+  await expect(header.locator(".customer-header__user-name")).toHaveText(`${name} Updated`);
   await expect(page.getByLabel("Phone number")).toHaveValue("+8801812345678");
   await logout(page);
 
@@ -57,7 +57,7 @@ test("new customer profile changes persist through reload and a fresh login", as
   await page.getByLabel("Password", { exact: true }).fill("CampusEats123!");
   await page.getByRole("button", { name: "Log in" }).click();
   await page.waitForURL(/\/customer/);
-  await expect(page.locator("header.customer-header").getByText(`${name} Updated`)).toBeVisible();
+  await expect(page.locator("header.customer-header .customer-header__user-name")).toHaveText(`${name} Updated`);
   await page.goto("/customer/profile");
   await expect(page.getByLabel("Phone number")).toHaveValue("+8801812345678");
 });

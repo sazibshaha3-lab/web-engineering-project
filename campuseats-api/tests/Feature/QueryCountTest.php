@@ -33,6 +33,7 @@ class QueryCountTest extends TestCase
     {
         $admin=$this->token('admin@campuseats.test','Admin123!');
         $riderToken=$this->token('rider@campuseats.test','Rider123!');
+        $this->withToken($riderToken)->patchJson('/api/rider/availability', ['is_available' => true])->assertOk();
         $customer=User::where('role','customer')->firstOrFail();
         $food=Food::where('restaurant_id',1)->firstOrFail();
         foreach (['PLACED','READY_FOR_PICKUP'] as $i=>$status) {

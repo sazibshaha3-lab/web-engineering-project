@@ -9,6 +9,7 @@ export default function CustomerDeliveryInfo({ address, instructions, customer }
         <div>
           <span>Customer</span>
           <strong>{customer?.name || "Customer"}</strong>
+          {customer?.phone && <a className="customer-delivery-info__contact" href={`tel:${customer.phone}`}>{customer.phone}</a>}
         </div>
       </div>
       <div className="customer-delivery-info__row">
@@ -16,6 +17,12 @@ export default function CustomerDeliveryInfo({ address, instructions, customer }
         <div>
           <span>Delivery address</span>
           <strong>{address?.label} — {address?.line}</strong>
+          {(address?.area || address?.city) && (
+            <span className="customer-delivery-info__address-extra">
+              {[address.area, address.city].filter(Boolean).join(", ")}
+            </span>
+          )}
+          {address?.details && <span className="customer-delivery-info__address-extra">{address.details}</span>}
           {address?.latitude != null && address?.longitude != null && (
             <a
               className="customer-delivery-info__map-link"

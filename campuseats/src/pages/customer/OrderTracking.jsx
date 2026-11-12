@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import {
   ArrowLeft,
   Clock,
@@ -16,13 +15,12 @@ import {
   Ban,
   ExternalLink,
 } from "lucide-react";
-import ErrorState from "../../components/common/ErrorState";
 import Button from "../../components/common/Button";
-import { SkeletonBlock } from "../../components/common/SkeletonLoader";
 import OrderStatusBadge from "../../components/order/OrderStatusBadge";
 import OrderItems from "../../components/order/OrderItems";
 import OrderSummary from "../../components/order/OrderSummary";
-import { useOrders } from "../../context/OrderContext";
+import useOrderRecord from "../../hooks/useOrderRecord";
+import OrderLookupState from "../../components/order/OrderLookupState";
 import { liveOrderStatusFlow, liveOrderStatusMap } from "../../utils/statusMaps";
 import "./OrderTracking.css";
 
@@ -162,25 +160,11 @@ function InfoRow({ label, value }) {
 // ─────────────────────────────────────────────
 export default function OrderTracking() {
   const { orderId } = useParams();
-  const navigate = useNavigate();
-  const { getOrderById } = useOrders();
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 450);
-    return () => clearTimeout(t);
-  }, []);
-
-  const order = getOrderById(orderId);
+  const { order, loading, error, retry } = useOrderRecord(orderId);
 
   if (!order) {
     return (
-      <ErrorState
-        title="Order not found"
-        description="We couldn't find this order. It may no longer be available."
-        onRetry={() => navigate("/customer/orders")}
-        actionLabel="Back to Orders"
-      />
+      <OrderLookupState loading={loading} error={error} onRetry={retry} backTo="/customer/orders" />
     );
   }
 
@@ -237,14 +221,7 @@ export default function OrderTracking() {
         </div>
       )}
 
-      {loading ? (
-        /* ── Skeleton ── */
-        <div className="ot-skeleton-grid">
-          <SkeletonBlock height="320px" radius="var(--radius-lg)" style={{ display: "block" }} />
-          <SkeletonBlock height="200px" radius="var(--radius-lg)" style={{ display: "block" }} />
-        </div>
-      ) : (
-        <div className="ot-grid">
+      <div className="ot-grid">
 
           {/* ── LEFT / TOP column ── */}
           <div className="ot-col-main">
@@ -333,8 +310,7 @@ export default function OrderTracking() {
               </div>
             </div>
           </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 }

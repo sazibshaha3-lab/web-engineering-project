@@ -53,12 +53,16 @@ class E2ePreconditionsTest extends TestCase
     public function test_blocked_customer_cannot_use_existing_token_or_log_in(): void
     {
         $email = 'blocked-e2e@campuseats.test';
-        $registration = $this->postJson('/api/register', [
+        $payload = [
             'name' => 'Block Me',
             'email' => $email,
             'password' => 'Passw0rd!',
             'role' => 'customer',
-        ])->assertCreated()->assertJsonStructure(['user' => ['id'], 'token']);
+        ];
+        $this->postJson('/api/register/send-otp', $payload)->assertOk();
+        $this->postJson('/api/register/verify-otp', ['email' => $email, 'code' => '123456'])->assertOk();
+        $registration = $this->postJson('/api/register', ['email' => $email])
+            ->assertCreated()->assertJsonStructure(['user' => ['id'], 'token']);
         $customerToken = $registration->json('token');
 
         $adminToken = $this->postJson('/api/login', [

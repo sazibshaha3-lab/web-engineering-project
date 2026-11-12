@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { createServer } from "node:net";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { rmSync } from "node:fs";
@@ -15,9 +15,11 @@ const apiEnv = {
   APP_ENV: "local",
   DB_CONNECTION: "sqlite",
   AUTH_RATE_LIMIT: "1000",
-  CACHE_STORE: "array",
+  CACHE_STORE: "file",
   SESSION_DRIVER: "array",
   QUEUE_CONNECTION: "sync",
+  MAIL_MAILER: "array",
+  E2E_TEST_MODE: "true",
 };
 let activeCommand;
 
@@ -39,6 +41,7 @@ function run(command, args, cwd, env) {
     let completedTests = 0;
     let expectedTests = null;
     let failedTests = 0;
+    let webServerPid;
     let completionTimer;
     let pendingLines = "";
     const finish = (code) => {
@@ -56,6 +59,8 @@ function run(command, args, cwd, env) {
       const lines = pendingLines.split(/\r?\n/);
       pendingLines = lines.pop() ?? "";
       for (const line of lines) {
+        const webServerMatch = line.match(/\[WebServer\].*?\(node:(\d+)\)/);
+        if (webServerMatch) webServerPid = Number(webServerMatch[1]);
         const count = line.match(/Running (\d+) tests? using/);
         if (count) expectedTests = Number(count[1]);
         if (/^\s*x\s+\d+\s+\[/.test(line)) {
@@ -68,7 +73,30 @@ function run(command, args, cwd, env) {
       if (expectedTests && completedTests >= expectedTests && !completionTimer) {
         completionTimer = setTimeout(async () => {
           console.error("[e2e:isolated] Playwright reported all tests but did not exit; stopping its completed test process.");
-          if (child.exitCode === null) child.kill();
+          if (child.exitCode === null) {
+            if (windows && child.pid) {
+              try {
+                execFileSync("taskkill", ["/PID", String(child.pid), "/T", "/F"], {
+                  stdio: "ignore",
+                  timeout: 5000,
+                });
+              } catch {}
+            } else {
+              child.kill();
+            }
+          }
+          if (windows && webServerPid) {
+            try { process.kill(webServerPid, "SIGTERM"); } catch {}
+            try {
+              execFileSync("taskkill", ["/PID", String(webServerPid), "/T", "/F"], {
+                stdio: "ignore",
+                timeout: 5000,
+              });
+            } catch {}
+          }
+          child.kill();
+          child.stdout?.destroy();
+          child.stderr?.destroy();
           finish(failedTests ? 1 : 0);
         }, 15_000);
       }
@@ -108,10 +136,20 @@ function portIsFree(port) {
 
 async function stopServer(child) {
   if (!child || child.exitCode !== null) return;
+  if (windows && child.pid) {
+    try {
+      execFileSync("taskkill", ["/PID", String(child.pid), "/T", "/F"], {
+        stdio: "ignore",
+        timeout: 5000,
+      });
+    } catch {}
+  }
   child.kill(windows ? undefined : "SIGTERM");
   await new Promise((resolveStop) => {
     const timeout = setTimeout(() => {
       child.kill(windows ? undefined : "SIGKILL");
+      child.stdout?.destroy();
+      child.stderr?.destroy();
       resolveStop();
     }, 3000);
     child.once("close", () => {
@@ -210,6 +248,7 @@ try {
   const code = await run("npx", ["playwright", "test", ...process.argv.slice(2)], projectDir, {
     ...process.env,
     CI: "1",
+    E2E_TEST_MODE: "true",
     E2E_API_URL: `http://127.0.0.1:${apiPort}/api`,
     E2E_WEB_PORT: String(webPort),
   });

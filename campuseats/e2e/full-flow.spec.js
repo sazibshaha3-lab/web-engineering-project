@@ -45,7 +45,7 @@ async function placeOrder(page) {
   await add.first().click();
   await add.first().click();
 
-  await page.getByRole("link", { name: "Cart", exact: true }).click();
+  await page.getByRole("banner").getByRole("link", { name: /^Cart/ }).click();
   await page.getByRole("button", { name: /Proceed to Checkout/ }).click();
   const placeBtn = page.getByRole("button", { name: /Place Order/ });
   await expect(placeBtn).toBeEnabled(); // needs a selected delivery address (the seeded default one)
@@ -53,7 +53,7 @@ async function placeOrder(page) {
 
   await page.waitForURL(/\/customer\/order-success/);
   const orderNo = (await page.locator(".order-success__order-id").innerText()).trim();
-  expect(orderNo).toMatch(/^ORD-[A-Z0-9]{5}$/);
+  expect(orderNo).toMatch(/^ORD-[A-Z0-9]{10}$/);
   return orderNo;
 }
 
@@ -69,12 +69,25 @@ test.beforeAll(async ({ request }) => {
 });
 
 test("full order lifecycle: customer -> restaurant -> rider -> customer review -> admin", async ({ browser, request }) => {
+  const restaurantContext = await newTrackedContext(browser);
+  const restaurantPage = await restaurantContext.newPage();
+  await restaurantPage.goto("/login");
+  const restaurantOrdersLoaded = restaurantPage.waitForResponse((response) =>
+    response.request().method() === "GET" && response.url().endsWith("/api/orders")
+  );
+  await restaurantPage.getByRole("button", { name: new RegExp(ACCOUNTS.restaurant.email) }).click();
+  await restaurantPage.waitForURL(ACCOUNTS.restaurant.home);
+  await restaurantOrdersLoaded;
+  const restaurant = { context: restaurantContext, page: restaurantPage };
+
   const customer = await loginAs(browser, "customer");
   const orderNo = await placeOrder(customer.page);
+  await expect(restaurant.page.getByText(`New order ${orderNo} received`)).toBeVisible({ timeout: 20_000 });
+  await restaurant.page.getByRole("button", { name: /order notifications/i }).click();
+  await expect(restaurant.page.locator("#restaurant-notification-inbox")).toContainText(orderNo, { timeout: 20_000 });
   await customer.context.close();
 
   // ---- Restaurant: accept -> preparing -> ready for pickup ----
-  const restaurant = await loginAs(browser, "restaurant");
   await restaurant.page.goto(`/restaurant/orders/${orderNo}`);
   await restaurant.page.getByRole("button", { name: "Accept Order" }).click();
   await restaurant.page.getByRole("button", { name: "Start Preparing" }).click();
@@ -84,24 +97,33 @@ test("full order lifecycle: customer -> restaurant -> rider -> customer review -
 
   // ---- Rider: the request shows up (10 s polling), accept, pick up, deliver ----
   const rider = await loginAs(browser, "rider");
-  const availableOrderResponse = rider.page.waitForResponse(async (response) => {
-    if (!response.url().includes("/api/rider/available-orders") || !response.ok()) return false;
-    const data = await response.json();
-    return data.some((order) => order.order_number === orderNo && order.customer?.name === "Sazib Rahman");
-  });
+  await rider.page.goto("/rider");
+  const availabilityResponse = rider.page.waitForResponse((response) =>
+    response.request().method() === "PATCH" && response.url().endsWith("/api/rider/availability")
+  );
+  const availabilityToggle = rider.page.getByRole("checkbox", { name: "Toggle availability for delivery" });
+  await rider.page.locator(".ravail-toggle .switch").click();
+  const availabilityResult = await availabilityResponse;
+  expect(availabilityResult.ok(), `Rider availability PATCH returned ${availabilityResult.status()}`).toBe(true);
+  await expect(availabilityToggle).toBeChecked();
+  await expect(rider.page.getByText("Available for Delivery")).toBeVisible();
   await rider.page.goto("/rider/deliveries");
-  await availableOrderResponse;
   const card = rider.page.locator(".delivery-request-card", { hasText: orderNo });
   await expect(card).toBeVisible({ timeout: 45_000 });
-  await expect(card).toContainText("Sazib Rahman"); // customer name comes from the order, not mock data
   await card.getByRole("button", { name: "Accept Delivery" }).click();
   await rider.page.waitForURL(new RegExp(`/rider/deliveries/${orderNo}`));
+  await expect(rider.page.getByText("Sazib Rahman")).toBeVisible();
 
   await rider.page.getByRole("button", { name: "Pick Up Order" }).click();
   await rider.page.getByRole("dialog").getByRole("button", { name: "Confirm Pickup" }).click();
   await rider.page.getByRole("button", { name: "Start Delivery" }).click();
   await rider.page.getByRole("button", { name: "Mark Delivered" }).click();
+  const deliveredResponse = rider.page.waitForResponse((response) =>
+    response.request().method() === "PATCH" && /\/api\/orders\/\d+\/status$/.test(response.url())
+  );
   await rider.page.getByRole("dialog").getByRole("button", { name: "Mark Delivered" }).click();
+  const deliveryResult = await deliveredResponse;
+  expect(deliveryResult.ok(), `Delivery status PATCH returned ${deliveryResult.status()}`).toBe(true);
   await expect(rider.page.getByRole("button", { name: "Mark Delivered" })).toHaveCount(0);
 
   await rider.page.goto("/rider/history");
@@ -125,18 +147,63 @@ test("full order lifecycle: customer -> restaurant -> rider -> customer review -
 
   // ---- Admin: sees the order as delivered ----
   const admin = await loginAs(browser, "admin");
-  const deliveredOrderLoaded = admin.page.waitForResponse(async (response) => {
-    const url = new URL(response.url());
-    if (response.request().method() !== "GET" || url.pathname !== "/api/orders" || !response.ok()) return false;
-    const orders = await response.json();
-    return orders.some((order) => order.order_number === orderNo && order.status === "DELIVERED");
-  });
   await admin.page.goto(`/admin/orders/${orderNo}`);
-  await deliveredOrderLoaded;
   await expect(admin.page.getByText("Delivered").first()).toBeVisible();
   await expect(admin.page.getByText("Sazib Rahman").first()).toBeVisible(); // real customer name from the order
 
   await admin.context.close();
+});
+
+test("a delayed orders refresh cannot erase a newly placed order", async ({ browser }) => {
+  const context = await newTrackedContext(browser);
+  const page = await context.newPage();
+  let releaseDelayedResponse;
+  let delayedFirstRefresh = false;
+  const delayedResponse = new Promise((resolve) => { releaseDelayedResponse = resolve; });
+
+  await page.goto("/login");
+  await page.route("**/api/orders", async (route) => {
+    if (route.request().method() === "GET" && !delayedFirstRefresh) {
+      delayedFirstRefresh = true;
+      await delayedResponse;
+      await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+      return;
+    }
+    await route.continue();
+  });
+
+  try {
+    await page.getByRole("button", { name: new RegExp(ACCOUNTS.customer.email) }).click();
+    await page.waitForURL(ACCOUNTS.customer.home);
+    await expect.poll(() => delayedFirstRefresh).toBe(true);
+
+    const orderNo = await placeOrder(page);
+    releaseDelayedResponse();
+    await expect(page.locator(".customer-header__active-order").first()).toContainText("1 Active Order");
+
+    await page.goto(`/customer/orders/${orderNo}/track`);
+    await page.reload();
+    await expect(page.getByText(orderNo).first()).toBeVisible();
+    await expect(page.getByText("Couldn't load this order")).toHaveCount(0);
+  } finally {
+    releaseDelayedResponse();
+    await context.close();
+  }
+});
+
+test("order tracking falls back to the authorized order list when the number lookup route is unavailable", async ({ browser }) => {
+  const firstSession = await loginAs(browser, "customer");
+  const orderNo = await placeOrder(firstSession.page);
+  await firstSession.context.close();
+
+  const customer = await loginAs(browser, "customer");
+  await customer.page.route("**/api/orders/by-number/**", (route) =>
+    route.fulfill({ status: 404, contentType: "application/json", body: JSON.stringify({ message: "Not found" }) })
+  );
+  await customer.page.goto(`/customer/orders/${orderNo}/track`);
+  await expect(customer.page.getByText(orderNo).first()).toBeVisible();
+  await expect(customer.page.getByText("Couldn't load this order")).toHaveCount(0);
+  await customer.context.close();
 });
 
 test("customer can cancel an order while it is still PLACED", async ({ browser }) => {
@@ -192,9 +259,19 @@ test("route guards: guests and wrong roles are redirected", async ({ browser }) 
 
 test("a customer blocked by the admin cannot log in (and is signed out)", async ({ browser, request }) => {
   const email = `blocked.${Date.now()}@e2e.test`;
-  const reg = await request.post(`${API}/register`, {
+  const draft = await request.post(`${API}/register/send-otp`, {
     headers: { Accept: "application/json" },
     data: { name: "Block Me", email, password: "Passw0rd!", role: "customer" },
+  });
+  expect(draft.ok()).toBe(true);
+  const otp = await request.post(`${API}/register/verify-otp`, {
+    headers: { Accept: "application/json" },
+    data: { email, code: "123456" },
+  });
+  expect(otp.ok()).toBe(true);
+  const reg = await request.post(`${API}/register`, {
+    headers: { Accept: "application/json" },
+    data: { email },
   });
   expect(reg.status()).toBe(201);
   const { user, token: customerToken } = await reg.json();

@@ -5,10 +5,12 @@ RUN composer install --no-dev --no-interaction --no-progress --prefer-dist --no-
 
 FROM php:8.3-apache
 RUN apt-get update \
- && apt-get install -y --no-install-recommends libzip-dev unzip \
- && docker-php-ext-install pdo_mysql zip bcmath \
+ && apt-get install -y --no-install-recommends gosu libzip-dev libonig-dev unzip \
+ && docker-php-ext-install pdo_mysql zip bcmath mbstring \
  && a2enmod rewrite headers \
  && rm -rf /var/lib/apt/lists/*
+
+RUN php -r 'foreach (["ctype", "fileinfo", "mbstring", "openssl", "pdo", "pdo_mysql", "tokenizer", "zip", "bcmath"] as $extension) { if (! extension_loaded($extension)) { fwrite(STDERR, "Missing required PHP extension: {$extension}\\n"); exit(1); } }'
 
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf \

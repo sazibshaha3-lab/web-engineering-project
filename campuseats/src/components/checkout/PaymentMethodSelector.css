@@ -16,6 +16,9 @@
 }
 
 .payment-option:hover { border-color: var(--color-primary); }
+.payment-option:disabled { cursor: not-allowed; }
+.payment-option.is-disabled { opacity: 0.68; }
+.payment-option.is-disabled:hover { border-color: var(--color-border); }
 
 .payment-option.is-selected {
   border-color: var(--color-primary);

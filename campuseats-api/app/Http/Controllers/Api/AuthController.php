@@ -65,7 +65,9 @@ class AuthController extends Controller
             $data = $draft;
         }
         $email = $data['email'];
-        $code = (string) random_int(100000, 999999);
+        $code = app()->environment('testing') || env('E2E_TEST_MODE', false)
+            ? '123456'
+            : (string) random_int(100000, 999999);
 
         Mail::raw("Your CampusEats verification code is {$code}. It expires in 10 minutes.", function ($message) use ($email) {
             $message->to($email)->subject('Your CampusEats verification code');
@@ -87,26 +89,28 @@ class AuthController extends Controller
             'code' => 'required|digits:6',
         ]);
         $otpKey = $this->registrationOtpKey($data['email']);
-        $otp = Cache::get($otpKey);
+        Cache::lock($otpKey.':verify-lock', 10)->block(5, function () use ($data, $otpKey) {
+            $otp = Cache::get($otpKey);
 
-        if (! $otp || ($otp['attempts'] ?? 0) >= 5) {
+            if (! $otp || ($otp['attempts'] ?? 0) >= 5) {
+                Cache::forget($otpKey);
+                throw ValidationException::withMessages(['code' => ['The code expired. Request a new one.']]);
+            }
+
+            if (! Cache::has($this->registrationDraftKey($data['email']))) {
+                Cache::forget($otpKey);
+                throw ValidationException::withMessages(['email' => ['Your registration session expired. Please register again.']]);
+            }
+
+            if (! Hash::check($data['code'], $otp['hash'])) {
+                $otp['attempts']++;
+                Cache::put($otpKey, $otp, now()->addMinutes(10));
+                throw ValidationException::withMessages(['code' => ['Incorrect verification code. Please try again.']]);
+            }
+
+            Cache::put($this->registrationVerifiedKey($data['email']), true, now()->addMinutes(10));
             Cache::forget($otpKey);
-            throw ValidationException::withMessages(['code' => ['The code expired. Request a new one.']]);
-        }
-
-        if (! Cache::has($this->registrationDraftKey($data['email']))) {
-            Cache::forget($otpKey);
-            throw ValidationException::withMessages(['email' => ['Your registration session expired. Please register again.']]);
-        }
-
-        if (! Hash::check($data['code'], $otp['hash'])) {
-            $otp['attempts']++;
-            Cache::put($otpKey, $otp, now()->addMinutes(10));
-            throw ValidationException::withMessages(['code' => ['Incorrect verification code. Please try again.']]);
-        }
-
-        Cache::put($this->registrationVerifiedKey($data['email']), true, now()->addMinutes(10));
-        Cache::forget($otpKey);
+        });
 
         return response()->json(['message' => 'Email verified.']);
     }
@@ -120,57 +124,61 @@ class AuthController extends Controller
         $email = $request->input('email');
 
         $verifiedKey = $this->registrationVerifiedKey($email);
-        if (! Cache::get($verifiedKey)) {
-            throw ValidationException::withMessages([
-                'email' => ['Verify your email before creating an account.'],
-            ]);
-        }
+        return Cache::lock($verifiedKey.':register-lock', 60)->block(5, function () use ($email, $verifiedKey) {
+            if (! Cache::get($verifiedKey)) {
+                throw ValidationException::withMessages([
+                    'email' => ['Verify your email before creating an account.'],
+                ]);
+            }
 
-        $data = Cache::get($this->registrationDraftKey($email));
-        if (! $data) {
+            $data = Cache::get($this->registrationDraftKey($email));
+            if (! $data) {
+                Cache::forget($verifiedKey);
+                throw ValidationException::withMessages([
+                    'email' => ['Your registration session expired. Please register again.'],
+                ]);
+            }
+
+            $user = DB::transaction(function () use ($data) {
+                $user = User::create([
+                    'name' => $data['name'],
+                    'email' => $data['email'],
+                    'phone' => $data['phone'] ?? null,
+                    'password' => $data['password'], // model er 'hashed' cast nijei hash korbe
+                    'role' => $data['role'],
+                    'email_verified_at' => now(),
+                ]);
+
+                if ($data['role'] === 'restaurant_owner') {
+                    Restaurant::create([
+                        'owner_id' => $user->id,
+                        'name' => $data['restaurant_name'],
+                        'address' => $data['restaurant_address'],
+                        'approval_status' => 'PENDING',
+                    ]);
+                }
+
+                if ($data['role'] === 'rider') {
+                    Rider::create([
+                        'user_id' => $user->id,
+                        'vehicle_type' => $data['vehicle_type'],
+                        'vehicle_number' => $data['vehicle_number'],
+                        'approval_status' => 'PENDING',
+                    ]);
+                }
+
+                return $user;
+            });
+
+            $token = $user->createToken('auth_token')->plainTextToken;
             Cache::forget($verifiedKey);
-            throw ValidationException::withMessages(['email' => ['Your registration session expired. Please register again.']]);
-        }
+            Cache::forget($this->registrationDraftKey($email));
 
-        $user = DB::transaction(function () use ($data) {
-            $user = User::create([
-                'name' => $data['name'],
-                'email' => $data['email'],
-                'phone' => $data['phone'] ?? null,
-                'password' => $data['password'], // model er 'hashed' cast nijei hash korbe
-                'role' => $data['role'],
-                'email_verified_at' => now(),
-            ]);
-
-            if ($data['role'] === 'restaurant_owner') {
-                Restaurant::create([
-                    'owner_id' => $user->id,
-                    'name' => $data['restaurant_name'],
-                    'address' => $data['restaurant_address'],
-                    'approval_status' => 'PENDING',
-                ]);
-            }
-
-            if ($data['role'] === 'rider') {
-                Rider::create([
-                    'user_id' => $user->id,
-                    'vehicle_type' => $data['vehicle_type'],
-                    'vehicle_number' => $data['vehicle_number'],
-                    'approval_status' => 'PENDING',
-                ]);
-            }
-
-            return $user;
+            return response()->json([
+                'user' => $user->load(['restaurant', 'rider']),
+                'token' => $token,
+            ], 201);
         });
-
-        $token = $user->createToken('auth_token')->plainTextToken;
-        Cache::forget($verifiedKey);
-        Cache::forget($this->registrationDraftKey($email));
-
-        return response()->json([
-            'user' => $user->load(['restaurant', 'rider']),
-            'token' => $token,
-        ], 201);
     }
 
     public function login(Request $request)

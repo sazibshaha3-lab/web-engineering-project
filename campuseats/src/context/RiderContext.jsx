@@ -8,7 +8,6 @@ import { normalizeRider } from "../services/peopleApi";
 
 const RiderContext = createContext(null);
 
-const EARNING_PER_DELIVERY = 50;
 const POLL_MS = 10000;
 const ACTIVE = ["READY_FOR_PICKUP", "PICKED_UP", "OUT_FOR_DELIVERY"];
 
@@ -22,7 +21,6 @@ export function RiderProvider({ children }) {
 
   const [adminRiders, setAdminRiders] = useState([]);
   const [availableOrders, setAvailableOrders] = useState([]);
-  const [isAvailable, setIsAvailable] = useState(true);
   const [declinedIds, setDeclinedIds] = useState(() => new Set());
 
   const isRider = user?.role === "rider";
@@ -37,6 +35,7 @@ export function RiderProvider({ children }) {
   const riders = isAdmin ? adminRiders : rider ? [rider] : [];
 
   const isApproved = rider?.approvalStatus === "APPROVED";
+  const isAvailable = rider?.isAvailable ?? false;
 
   // ---------- Admin: rider registry ----------
   useEffect(() => {
@@ -65,7 +64,7 @@ export function RiderProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    if (!isRider || !isApproved) {
+    if (!isRider || !isApproved || !isAvailable) {
       setAvailableOrders([]);
       return;
     }
@@ -79,10 +78,16 @@ export function RiderProvider({ children }) {
       clearInterval(timer);
       document.removeEventListener("visibilitychange", tick);
     };
-  }, [isRider, isApproved, loadAvailable]);
+  }, [isRider, isApproved, isAvailable, loadAvailable]);
 
-  function setAvailability(next) {
-    setIsAvailable(next);
+  async function setAvailability(next) {
+    try {
+      await api.patch("/rider/availability", { is_available: next });
+      await refreshUser();
+      return { success: true };
+    } catch (err) {
+      return { success: false, message: apiErrorMessage(err, "Could not update availability.") };
+    }
   }
 
   function getAvailableDeliveries() {
@@ -134,19 +139,21 @@ export function RiderProvider({ children }) {
     setDeclinedIds((prev) => new Set(prev).add(orderId));
   }
 
-  async function transition(orderId, from, to) {
+  async function transition(orderId, from, to, details = {}) {
     const order = orders.find((o) => o.id === orderId);
     if (!order || !rider || order.riderId !== rider.id || order.status !== from) {
       return { success: false, message: "This delivery can no longer be updated that way." };
     }
-    return updateOrderStatus(orderId, to);
+    return updateOrderStatus(orderId, to, details);
   }
 
   const markPickedUp = (orderId) => transition(orderId, "READY_FOR_PICKUP", "PICKED_UP");
   const startDelivery = (orderId) => transition(orderId, "PICKED_UP", "OUT_FOR_DELIVERY");
 
-  async function markDelivered(orderId) {
-    const result = await transition(orderId, "OUT_FOR_DELIVERY", "DELIVERED");
+  async function markDelivered(orderId, cashCollected = false) {
+    const order = orders.find((o) => o.id === orderId);
+    const details = order?.paymentMethod === "cod" ? { cash_collected: cashCollected } : {};
+    const result = await transition(orderId, "OUT_FOR_DELIVERY", "DELIVERED", details);
     if (result.success) refreshUser(); // the server incremented totalDeliveries; fetch the new count
     return result;
   }
@@ -183,13 +190,22 @@ export function RiderProvider({ children }) {
   const blockRider = (id) => adminSetRider(id, "BLOCKED");
   const unblockRider = (id) => adminSetRider(id, "APPROVED");
 
-  const deliveredCount = getDeliveryHistory().length;
+  const deliveryHistory = getDeliveryHistory();
+  const today = new Date();
+  const todaysDeliveryCount = deliveryHistory.filter((order) => {
+    if (!order.deliveredAt) return false;
+    const deliveredAt = new Date(order.deliveredAt);
+    return deliveredAt.getFullYear() === today.getFullYear()
+      && deliveredAt.getMonth() === today.getMonth()
+      && deliveredAt.getDate() === today.getDate();
+  }).length;
 
   const stats = {
-    todaysDeliveries: deliveredCount,
+    todaysDeliveries: todaysDeliveryCount,
     activeDelivery: getAssignedDeliveries().length,
-    completedDeliveries: deliveredCount,
-    todaysEarnings: deliveredCount * EARNING_PER_DELIVERY,
+    completedDeliveries: deliveryHistory.length,
+    // The platform has no approved rider payout policy yet; never display a fabricated amount.
+    todaysEarnings: null,
   };
 
   const value = {

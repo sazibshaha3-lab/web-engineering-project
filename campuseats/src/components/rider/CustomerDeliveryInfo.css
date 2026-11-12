@@ -20,6 +20,19 @@
   color: var(--color-text);
 }
 
+.customer-delivery-info__contact,
+.customer-delivery-info__address-extra {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+}
+
+.customer-delivery-info__contact {
+  color: var(--color-primary-dark);
+  font-weight: 700;
+}
+
 .customer-delivery-info__map-link {
   display: inline-block;
   margin-top: 5px;

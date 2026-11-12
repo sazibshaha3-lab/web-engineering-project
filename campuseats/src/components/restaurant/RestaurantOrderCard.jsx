@@ -3,8 +3,6 @@ import { MapPin, Wallet2 } from "lucide-react";
 import Button from "../common/Button";
 import OrderStatusBadge from "../order/OrderStatusBadge";
 
-const paymentLabels = { cod: "Cash on Delivery", online: "Online Payment" };
-
 function summarizeItems(items) {
   const [first, ...rest] = items;
   if (!first) return "";
@@ -34,7 +32,7 @@ export default function RestaurantOrderCard({ order }) {
       <div className="rorder-card__footer">
         <div className="rorder-card__info">
           <span><MapPin size={13} strokeWidth={2} /> {order.deliveryAddress?.label}</span>
-          <span><Wallet2 size={13} strokeWidth={2} /> {paymentLabels[order.paymentMethod] || order.paymentMethod}</span>
+          <span><Wallet2 size={13} strokeWidth={2} /> Cash on Delivery</span>
           <span className="rorder-card__total">৳{order.total}</span>
         </div>
         <Button as={Link} to={`/restaurant/orders/${order.id}`} variant="secondary" size="sm">

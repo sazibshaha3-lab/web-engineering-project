@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   Bike,
   ShieldCheck,
@@ -47,16 +47,31 @@ const values = [
   { icon: Store, title: "Nearby restaurants", desc: "From hostel messes to favourite local spots, all within a short ride." },
   { icon: ShoppingBag, title: "Easy ordering", desc: "A few taps from craving to checkout, with your addresses saved for next time." },
   { icon: MapPinned, title: "Multiple locations", desc: "Order for your room, your lab, or a friend's hall without re-entering details." },
-  { icon: ShieldCheck, title: "Secure payments", desc: "Pay on delivery or online with checkout built to keep your details safe." },
+  { icon: ShieldCheck, title: "Cash on delivery", desc: "Pay the rider when your order arrives." },
   { icon: Wallet, title: "Reliable tracking", desc: "Know exactly where your order is, from the kitchen to your doorstep." },
 ];
 
 export default function Home() {
   const { restaurants, foods } = useRestaurantData();
+  const location = useLocation();
   const howItWorksRef = useRef(null);
   const [howItWorksVisible, setHowItWorksVisible] = useState(false);
   const [activeHeroSlide, setActiveHeroSlide] = useState(0);
   const [heroPaused, setHeroPaused] = useState(false);
+
+  useEffect(() => {
+    if (location.hash) {
+      const rawId = location.hash.replace("#", "");
+      const targetId = rawId === "partnerships" ? "community" : rawId;
+      const timer = setTimeout(() => {
+        const el = document.getElementById(targetId) || document.getElementById(rawId);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [location.hash, location.pathname]);
 
   const heroSlides = useMemo(() => {
     const availableFoods = foods.filter((food) => food.isAvailable && food.image);
@@ -234,7 +249,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="section section--steps" ref={howItWorksRef}>
+      <section className="section section--steps" id="how-it-works" ref={howItWorksRef}>
         <div className="container">
           <div className="steps-heading">
             <span className="steps-heading__eyebrow">Simple from start to finish</span>
@@ -305,7 +320,8 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="partnership-section" id="partnerships">
+      <section className="partnership-section" id="community">
+        <span id="partnerships" style={{ position: "relative", top: "-86px", display: "block" }} aria-hidden="true" />
         <div className="container">
           <div className="partnership-section__heading">
             <span>Grow with CampusEats</span>

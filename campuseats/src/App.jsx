@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import { ToastProvider } from "./components/feedback/ToastContext";
 import CartConflictDialog from "./components/cart/CartConflictDialog";
 import { AuthProvider } from "./context/AuthContext";
@@ -22,49 +23,49 @@ import RestaurantLayout from "./layouts/RestaurantLayout";
 import RiderLayout from "./layouts/RiderLayout";
 import AdminLayout from "./layouts/AdminLayout";
 
-import Home from "./pages/public/Home";
-import Login from "./pages/public/Login";
-import Register from "./pages/public/Register";
-import VerifyOtp from "./pages/public/VerifyOtp";
-import NotFound from "./pages/public/NotFound";
-import CompanyPage from "./pages/public/CompanyPage";
+const Home = lazy(() => import("./pages/public/Home"));
+const Login = lazy(() => import("./pages/public/Login"));
+const Register = lazy(() => import("./pages/public/Register"));
+const VerifyOtp = lazy(() => import("./pages/public/VerifyOtp"));
+const NotFound = lazy(() => import("./pages/public/NotFound"));
+const CompanyPage = lazy(() => import("./pages/public/CompanyPage"));
 
-import CustomerHome from "./pages/customer/CustomerHome";
-import Restaurants from "./pages/customer/Restaurants";
-import RestaurantDetail from "./pages/customer/RestaurantDetail";
-import Cart from "./pages/customer/Cart";
-import Checkout from "./pages/customer/Checkout";
-import Orders from "./pages/customer/Orders";
-import OrderDetails from "./pages/customer/OrderDetails";
-import OrderTracking from "./pages/customer/OrderTracking";
-import Profile from "./pages/customer/Profile";
-import Locations from "./pages/customer/Locations";
-import OrderSuccess from "./pages/customer/OrderSuccess";
+const CustomerHome = lazy(() => import("./pages/customer/CustomerHome"));
+const Restaurants = lazy(() => import("./pages/customer/Restaurants"));
+const RestaurantDetail = lazy(() => import("./pages/customer/RestaurantDetail"));
+const Cart = lazy(() => import("./pages/customer/Cart"));
+const Checkout = lazy(() => import("./pages/customer/Checkout"));
+const Orders = lazy(() => import("./pages/customer/Orders"));
+const OrderDetails = lazy(() => import("./pages/customer/OrderDetails"));
+const OrderTracking = lazy(() => import("./pages/customer/OrderTracking"));
+const Profile = lazy(() => import("./pages/customer/Profile"));
+const Locations = lazy(() => import("./pages/customer/Locations"));
+const OrderSuccess = lazy(() => import("./pages/customer/OrderSuccess"));
 
-import RestaurantDashboard from "./pages/restaurant/RestaurantDashboard";
-import RestaurantMenu from "./pages/restaurant/RestaurantMenu";
-import RestaurantOrders from "./pages/restaurant/RestaurantOrders";
-import RestaurantOrderDetails from "./pages/restaurant/RestaurantOrderDetails";
-import RestaurantProfile from "./pages/restaurant/RestaurantProfile";
-import RestaurantApprovalPending from "./pages/restaurant/RestaurantApprovalPending";
+const RestaurantDashboard = lazy(() => import("./pages/restaurant/RestaurantDashboard"));
+const RestaurantMenu = lazy(() => import("./pages/restaurant/RestaurantMenu"));
+const RestaurantOrders = lazy(() => import("./pages/restaurant/RestaurantOrders"));
+const RestaurantOrderDetails = lazy(() => import("./pages/restaurant/RestaurantOrderDetails"));
+const RestaurantProfile = lazy(() => import("./pages/restaurant/RestaurantProfile"));
+const RestaurantApprovalPending = lazy(() => import("./pages/restaurant/RestaurantApprovalPending"));
 
-import RiderDashboard from "./pages/rider/RiderDashboard";
-import RiderDeliveries from "./pages/rider/RiderDeliveries";
-import RiderDeliveryDetails from "./pages/rider/RiderDeliveryDetails";
-import RiderHistory from "./pages/rider/RiderHistory";
-import RiderProfile from "./pages/rider/RiderProfile";
-import RiderApprovalPending from "./pages/rider/RiderApprovalPending";
+const RiderDashboard = lazy(() => import("./pages/rider/RiderDashboard"));
+const RiderDeliveries = lazy(() => import("./pages/rider/RiderDeliveries"));
+const RiderDeliveryDetails = lazy(() => import("./pages/rider/RiderDeliveryDetails"));
+const RiderHistory = lazy(() => import("./pages/rider/RiderHistory"));
+const RiderProfile = lazy(() => import("./pages/rider/RiderProfile"));
+const RiderApprovalPending = lazy(() => import("./pages/rider/RiderApprovalPending"));
 
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminOrders from "./pages/admin/AdminOrders";
-import AdminOrderDetails from "./pages/admin/AdminOrderDetails";
-import AdminCustomers from "./pages/admin/AdminCustomers";
-import AdminCustomerDetails from "./pages/admin/AdminCustomerDetails";
-import AdminRestaurants from "./pages/admin/AdminRestaurants";
-import AdminRestaurantDetails from "./pages/admin/AdminRestaurantDetails";
-import AdminRiders from "./pages/admin/AdminRiders";
-import AdminRiderDetails from "./pages/admin/AdminRiderDetails";
-import AdminProfile from "./pages/admin/AdminProfile";
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
+const AdminOrderDetails = lazy(() => import("./pages/admin/AdminOrderDetails"));
+const AdminCustomers = lazy(() => import("./pages/admin/AdminCustomers"));
+const AdminCustomerDetails = lazy(() => import("./pages/admin/AdminCustomerDetails"));
+const AdminRestaurants = lazy(() => import("./pages/admin/AdminRestaurants"));
+const AdminRestaurantDetails = lazy(() => import("./pages/admin/AdminRestaurantDetails"));
+const AdminRiders = lazy(() => import("./pages/admin/AdminRiders"));
+const AdminRiderDetails = lazy(() => import("./pages/admin/AdminRiderDetails"));
+const AdminProfile = lazy(() => import("./pages/admin/AdminProfile"));
 
 export default function App() {
   return (
@@ -80,6 +81,7 @@ export default function App() {
                     <AdminProvider>
                       <CartConflictDialog />
                       <BrowserRouter>
+                        <Suspense fallback={<div role="status" style={{ minHeight: "60vh", display: "grid", placeItems: "center" }}>Loading page…</div>}>
                         <Routes>
                           <Route element={<PublicLayout />}>
                             <Route path="/" element={<Home />} />
@@ -151,6 +153,7 @@ export default function App() {
 
                           <Route path="*" element={<NotFound />} />
                         </Routes>
+                        </Suspense>
                       </BrowserRouter>
                     </AdminProvider>
                   </RiderProvider>

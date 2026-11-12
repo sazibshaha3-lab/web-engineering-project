@@ -28,5 +28,15 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute(config('campuseats.auth_rate_limit') * 3)
                 ->by($request->ip()),
         ]);
+
+        RateLimiter::for('order-create', function (Request $request) {
+            $accountKey = (string) ($request->user()?->id ?? $request->ip());
+
+            return [
+                Limit::perMinute(10)->by('minute:'.$accountKey),
+                Limit::perHour(60)->by('hour:'.$accountKey),
+            ];
+        });
+
     }
 }

@@ -5,13 +5,16 @@ use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\FoodController;
+use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\OwnerNotificationController;
 use App\Http\Controllers\Api\OwnerController;
 use App\Http\Controllers\Api\RestaurantController;
 use App\Http\Controllers\Api\RiderController;
 use Illuminate\Support\Facades\Route;
 
 // ---------- Public ----------
+Route::get('/health/ready', [HealthController::class, 'ready'])->name('health.ready');
 Route::middleware('throttle:auth')->group(function () {
     Route::post('/register/send-otp', [AuthController::class, 'sendRegistrationOtp']);
     Route::post('/register/verify-otp', [AuthController::class, 'verifyRegistrationOtp']);
@@ -36,12 +39,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Orders (shob role: nijer order dekhte pare)
     Route::get('/orders', [OrderController::class, 'index']);
+    Route::get('/orders/by-number/{orderNumber}', [OrderController::class, 'showByNumber']);
     Route::get('/orders/{order}', [OrderController::class, 'show']);
 
     // Customer
     Route::middleware('role:customer')->group(function () {
         Route::apiResource('addresses', AddressController::class)->except('show');
-        Route::post('/orders', [OrderController::class, 'store']);
+        Route::post('/orders', [OrderController::class, 'store'])->middleware('throttle:order-create');
         Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel']);
         Route::post('/orders/{order}/review', [OrderController::class, 'review']);
     });
@@ -52,6 +56,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Restaurant owner
     Route::prefix('owner')->middleware(['role:restaurant_owner', 'restaurant.approved'])->group(function () {
+        Route::get('/notifications', [OwnerNotificationController::class, 'index']);
+        Route::patch('/notifications/{notificationId}/read', [OwnerNotificationController::class, 'markRead']);
         Route::get('/restaurant', [OwnerController::class, 'restaurant']);
         Route::put('/restaurant', [OwnerController::class, 'updateRestaurant']);
         Route::get('/foods', [OwnerController::class, 'foods']);
@@ -64,6 +70,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('rider')->middleware(['role:rider', 'rider.approved'])->group(function () {
         Route::get('/available-orders', [RiderController::class, 'available']);
         Route::post('/orders/{id}/claim', [RiderController::class, 'claim']);
+        Route::patch('/availability', [RiderController::class, 'updateAvailability']);
     });
     Route::prefix('rider')->middleware('role:rider')->group(function () {
         Route::put('/profile', [RiderController::class, 'updateProfile']);
@@ -80,7 +87,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/customers', [AdminController::class, 'customers']);
         Route::patch('/customers/{user}/status', [AdminController::class, 'setCustomerStatus']);
         Route::post('/orders/{order}/cancel', [OrderController::class, 'adminCancel']);
-
         Route::post('/categories', [CategoryController::class, 'store']);
         Route::put('/categories/{category}', [CategoryController::class, 'update']);
         Route::delete('/categories/{category}', [CategoryController::class, 'destroy']);

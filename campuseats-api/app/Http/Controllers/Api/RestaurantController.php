@@ -28,12 +28,17 @@ class RestaurantController extends Controller
                 ->orWhere('description', 'like', "%{$s}%"));
         }
 
-        return $q->orderByDesc('rating')->get();
+        return $q->orderByDesc('rating')->get()->each(function (Restaurant $restaurant) {
+            $restaurant->setAttribute('is_open', $restaurant->isAcceptingOrders());
+        });
     }
 
     public function show($id)
     {
-        return $this->visible()->with('foods.extras')->findOrFail($id);
+        $restaurant = $this->visible()->with('foods.extras')->findOrFail($id);
+        $restaurant->setAttribute('is_open', $restaurant->isAcceptingOrders());
+
+        return $restaurant;
     }
 
     public function foods($id)

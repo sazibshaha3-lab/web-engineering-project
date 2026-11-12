@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Support\Facades\App;
 use App\Models\Address;
 use App\Models\Category;
 use App\Models\Food;
@@ -17,6 +18,10 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        if (App::environment('production')) {
+            throw new \RuntimeException('Demo seeding is disabled in production. Create the first admin with php artisan campuseats:admin.');
+        }
+
         $d = json_decode(file_get_contents(database_path('seed-data.json')), true);
         $phone = '+880 1XXX-XXXXXX';
         $demoAccounts = (bool) config('campuseats.seed_demo_accounts', true);

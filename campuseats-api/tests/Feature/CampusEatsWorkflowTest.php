@@ -56,7 +56,10 @@ class CampusEatsWorkflowTest extends TestCase
         if ($rider->approval_status !== 'APPROVED') {
             $this->asToken($adminToken)->patchJson("/api/admin/riders/{$rider->id}/approval", ['approval_status' => 'APPROVED'])->assertOk();
         }
-        return $rider->fresh();
+        $rider = $rider->fresh();
+        $riderToken = $this->token($rider->user->email, 'Rider123!');
+        $this->asToken($riderToken)->patchJson('/api/rider/availability', ['is_available' => true])->assertOk();
+        return $rider;
     }
 
     public function test_admin_blocks_customers_revokes_tokens_and_validates_status_targets(): void
@@ -113,7 +116,7 @@ class CampusEatsWorkflowTest extends TestCase
             ->assertCreated()->assertJsonPath('payment_status', 'PENDING');
         $this->assertEquals($expectedTotal, (float) $cashOrder->json('total'));
         $this->assertEquals($expectedSubtotal, (float) $cashOrder->json('subtotal'));
-        $this->placeOrder($customerToken, $restaurant->id, $food->id, $addressId, [], 'online')->assertCreated()->assertJsonPath('payment_status', 'PAID');
+        $this->placeOrder($customerToken, $restaurant->id, $food->id, $addressId, [], 'online')->assertUnprocessable();
 
         $restaurant->update(['is_open' => false]);
         $this->placeOrder($customerToken, $restaurant->id, $food->id, $addressId)->assertUnprocessable();
@@ -143,7 +146,7 @@ class CampusEatsWorkflowTest extends TestCase
         $restaurant = Restaurant::findOrFail(1);
         $snapshot = [
             'label' => $address['label'], 'line' => $address['line'], 'area' => $address['area'],
-            'city' => $address['city'], 'details' => $address['details'],
+            'city' => $address['city'], 'details' => $address['details'], 'latitude' => null, 'longitude' => null,
         ];
 
         $created = $this->asToken($customerToken)->postJson('/api/orders', [
@@ -188,6 +191,10 @@ class CampusEatsWorkflowTest extends TestCase
 
     public function test_order_lifecycle_claim_scoping_and_delivery_updates(): void
     {
+        // Orders are being exercised regardless of when the suite runs; keep the seeded
+        // restaurants inside their opening hours so this contract test is deterministic.
+        $this->travelTo(\Carbon\Carbon::parse('2026-01-15 15:00:00', 'Asia/Dhaka'));
+
         $customerToken = $this->token('demo@campuseats.test', 'Demo123!');
         $ownerToken = $this->token('restaurant@campuseats.test', 'Restaurant123!');
         $otherOwnerToken = $this->token('owner-r2@campuseats.test', 'Restaurant123!');
@@ -204,6 +211,10 @@ class CampusEatsWorkflowTest extends TestCase
 
         $order = $this->placeOrder($customerToken, 1, $r1Food->id, $customerAddress)->assertCreated();
         $orderId = $order->json('id');
+        $orderNumber = $order->json('order_number');
+        $this->asToken($customerToken)->getJson("/api/orders/by-number/{$orderNumber}")->assertOk()
+            ->assertJsonPath('id', $orderId)->assertJsonPath('status', 'PLACED');
+        $this->asToken($otherCustomerToken)->getJson("/api/orders/by-number/{$orderNumber}")->assertForbidden();
         $this->asToken($ownerToken)->patchJson("/api/orders/{$orderId}/status", ['status' => 'PREPARING'])->assertUnprocessable();
         $this->asToken($otherOwnerToken)->patchJson("/api/orders/{$orderId}/status", ['status' => 'ACCEPTED'])->assertForbidden();
         $this->asToken($ownerToken)->patchJson("/api/orders/{$orderId}/status", ['status' => 'ACCEPTED'])->assertOk();
@@ -222,13 +233,18 @@ class CampusEatsWorkflowTest extends TestCase
         $otherApprovedRider = Rider::where('id', '!=', $rider->id)->firstOrFail();
         $otherApprovedRider->update(['approval_status' => 'APPROVED']);
         $otherRiderToken = $otherApprovedRider->user->createToken('second-rider')->plainTextToken;
+        $this->asToken($otherRiderToken)->patchJson('/api/rider/availability', ['is_available' => true])->assertOk();
         $this->asToken($riderToken)->postJson("/api/rider/orders/{$orderId}/claim")->assertOk();
         $this->asToken($otherRiderToken)->postJson("/api/rider/orders/{$orderId}/claim")->assertStatus(409);
 
         foreach (['PICKED_UP', 'OUT_FOR_DELIVERY', 'DELIVERED'] as $status) {
-            $response = $this->asToken($riderToken)->patchJson("/api/orders/{$orderId}/status", compact('status'))->assertOk();
+            $details = ['status' => $status];
+            if ($status === 'DELIVERED') $details['cash_collected'] = true;
+            $response = $this->asToken($riderToken)->patchJson("/api/orders/{$orderId}/status", $details)->assertOk();
         }
         $this->assertSame('PAID', $response->json('payment_status'));
+        $this->asToken($customerToken)->getJson("/api/orders/by-number/{$orderNumber}")->assertOk()
+            ->assertJsonPath('id', $orderId)->assertJsonPath('status', 'DELIVERED');
         $this->assertSame((int) $rider->total_deliveries + 1, (int) $rider->fresh()->total_deliveries);
 
         $this->asToken($customerToken)->getJson('/api/orders')->assertOk()->assertJsonCount(2);
@@ -264,7 +280,9 @@ class CampusEatsWorkflowTest extends TestCase
         $riderToken = $this->token($rider->user->email, 'Rider123!');
         $this->asToken($riderToken)->postJson("/api/rider/orders/{$orderId}/claim")->assertOk();
         foreach (['PICKED_UP', 'OUT_FOR_DELIVERY', 'DELIVERED'] as $status) {
-            $this->asToken($riderToken)->patchJson("/api/orders/{$orderId}/status", compact('status'))->assertOk();
+            $details = ['status' => $status];
+            if ($status === 'DELIVERED') $details['cash_collected'] = true;
+            $this->asToken($riderToken)->patchJson("/api/orders/{$orderId}/status", $details)->assertOk();
         }
 
         $this->asToken($customerToken)->postJson("/api/orders/{$pending->json('id')}/review", ['rating' => 4])->assertUnprocessable();

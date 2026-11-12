@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Food;
+use App\Models\Restaurant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OwnerController extends Controller
 {
@@ -30,14 +32,16 @@ class OwnerController extends Controller
             'address' => 'sometimes|required|string|max:255',
             'category' => 'nullable|string|max:100',
             'delivery_time' => 'nullable|string|max:50',
-            'delivery_fee' => 'nullable|numeric|min:0',
+            'delivery_fee' => 'nullable|numeric|decimal:0,2|min:0|max:999999.99',
             'is_open' => 'nullable|boolean',
-            'opening_time' => 'nullable|string|max:20',
-            'closing_time' => 'nullable|string|max:20',
-            'minimum_order' => 'nullable|numeric|min:0',
+            'opening_time' => ['nullable', 'string', 'max:20', 'regex:/^(?:(?:0?[1-9]|1[0-2]):[0-5][0-9]\s?(?:AM|PM)|(?:[01]?[0-9]|2[0-3]):[0-5][0-9])$/i'],
+            'closing_time' => ['nullable', 'string', 'max:20', 'regex:/^(?:(?:0?[1-9]|1[0-2]):[0-5][0-9]\s?(?:AM|PM)|(?:[01]?[0-9]|2[0-3]):[0-5][0-9])$/i'],
+            'minimum_order' => 'nullable|numeric|decimal:0,2|min:0|max:999999.99',
         ]);
 
-        $restaurant->update($data);
+        DB::transaction(function () use ($restaurant, $data) {
+            Restaurant::lockForUpdate()->findOrFail($restaurant->id)->update($data);
+        });
 
         return $restaurant->fresh();
     }
@@ -56,13 +60,13 @@ class OwnerController extends Controller
             'name' => "$req|string|max:255",
             'image' => 'nullable|string',
             'description' => 'nullable|string',
-            'price' => "$req|numeric|min:0",
+            'price' => "$req|numeric|decimal:0,2|min:0|max:999999.99",
             'preparation_time' => 'nullable|string|max:50',
             'is_available' => 'nullable|boolean',
             'is_popular' => 'nullable|boolean',
             'extras' => 'nullable|array',
             'extras.*.name' => 'required|string|max:100',
-            'extras.*.price' => 'required|numeric|min:0',
+            'extras.*.price' => 'required|numeric|decimal:0,2|min:0|max:999999.99',
         ];
     }
 
@@ -93,16 +97,21 @@ class OwnerController extends Controller
         $extras = $data['extras'] ?? [];
         unset($data['extras']);
 
-        $food->update($data);
+        DB::transaction(function () use ($food, $restaurant, $data, $hasExtras, $extras) {
+            $lockedFood = Food::lockForUpdate()->findOrFail($food->id);
+            abort_if($lockedFood->restaurant_id !== $restaurant->id, 403);
 
-        if ($hasExtras) {
-            $food->extras()->delete();
-            if ($extras) {
-                $food->extras()->createMany($extras);
+            $lockedFood->update($data);
+
+            if ($hasExtras) {
+                $lockedFood->extras()->delete();
+                if ($extras) {
+                    $lockedFood->extras()->createMany($extras);
+                }
             }
-        }
+        });
 
-        return $food->load('extras');
+        return $food->fresh()->load('extras');
     }
 
     public function destroyFood(Request $request, Food $food)
@@ -110,7 +119,11 @@ class OwnerController extends Controller
         $restaurant = $this->myRestaurant($request);
         abort_if($food->restaurant_id !== $restaurant->id, 403);
 
-        $food->delete();
+        DB::transaction(function () use ($food, $restaurant) {
+            $lockedFood = Food::lockForUpdate()->findOrFail($food->id);
+            abort_if($lockedFood->restaurant_id !== $restaurant->id, 403);
+            $lockedFood->delete();
+        });
 
         return response()->noContent();
     }

@@ -77,6 +77,7 @@ class Phase45Test extends TestCase
         $riderToken = $this->token('rider@campuseats.test', 'Rider123!');
         $rider = User::where('email', 'rider@campuseats.test')->firstOrFail()->rider;
         $this->assertSame('APPROVED', $rider->approval_status);
+        $this->asToken($riderToken)->patchJson('/api/rider/availability', ['is_available' => true])->assertOk();
 
         $available = $this->createOrder($customerToken);
         $this->readyForPickup($available, $ownerToken);
@@ -87,12 +88,16 @@ class Phase45Test extends TestCase
 
         $response = $this->asToken($riderToken)->getJson('/api/rider/available-orders')->assertOk();
         $response->assertJsonCount(1)->assertJsonPath('0.id', $available->id)
-            ->assertJsonPath('0.customer.id', $available->customer_id)
-            ->assertJsonPath('0.customer.name', User::findOrFail($available->customer_id)->name)
-            ->assertJsonPath('0.customer.phone', User::findOrFail($available->customer_id)->phone)
             ->assertJsonPath('0.restaurant.delivery_time', $available->restaurant->delivery_time);
+        $availablePayload = $response->json('0');
+        $this->assertArrayNotHasKey('customer', $availablePayload);
+        $this->assertArrayNotHasKey('items', $availablePayload);
         $this->assertNotSame($notReady->id, $response->json('0.id'));
-        $this->assertIsArray($response->json('0.items'));
+        $claim = $this->asToken($riderToken)->postJson("/api/rider/orders/{$available->id}/claim")->assertOk();
+        $claim->assertJsonPath('customer.id', $available->customer_id)
+            ->assertJsonPath('customer.name', User::findOrFail($available->customer_id)->name)
+            ->assertJsonPath('customer.phone', User::findOrFail($available->customer_id)->phone)
+            ->assertJsonPath('items.0.id', $available->items()->firstOrFail()->id);
         $this->asToken($customerToken)->getJson('/api/rider/available-orders')->assertForbidden();
     }
 
@@ -124,7 +129,9 @@ class Phase45Test extends TestCase
 
         $this->asToken($adminToken)->patchJson("/api/orders/{$order->id}/status", ['status' => 'PREPARING'])->assertUnprocessable();
         foreach (['ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP', 'PICKED_UP', 'OUT_FOR_DELIVERY', 'DELIVERED'] as $status) {
-            $this->asToken($adminToken)->patchJson("/api/orders/{$order->id}/status", compact('status'))->assertOk();
+            $details = ['status' => $status];
+            if ($status === 'DELIVERED') $details['cash_collected'] = true;
+            $this->asToken($adminToken)->patchJson("/api/orders/{$order->id}/status", $details)->assertOk();
         }
         $this->assertSame('PAID', $order->fresh()->payment_status);
 

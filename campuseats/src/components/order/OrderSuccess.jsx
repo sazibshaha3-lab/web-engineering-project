@@ -4,8 +4,6 @@ import OrderStatusBadge from "./OrderStatusBadge";
 import Button from "../common/Button";
 import "./OrderSuccess.css";
 
-const paymentLabels = { cod: "Cash on Delivery", online: "Online Payment" };
-
 export default function OrderSuccess({ order }) {
   return (
     <div className="order-success">
@@ -43,7 +41,7 @@ export default function OrderSuccess({ order }) {
         </div>
         <div className="order-success__row">
           <span>Payment method</span>
-          <strong>{paymentLabels[order.paymentMethod] || order.paymentMethod}</strong>
+          <strong>Cash on Delivery</strong>
         </div>
         <div className="order-success__row">
           <span>Delivery address</span>

@@ -9,7 +9,7 @@ import "./admin-shared.css";
 export default function AdminRiderDetails() {
   const { riderId } = useParams();
   const navigate = useNavigate();
-  const { riders, orders, liveRiderIsAvailable, approveRider, rejectRider, blockRider, unblockRider } = useAdmin();
+  const { riders, orders, approveRider, rejectRider, blockRider, unblockRider } = useAdmin();
 
   const rider = riders.find((r) => r.id === riderId);
 
@@ -41,7 +41,7 @@ export default function AdminRiderDetails() {
         }
       />
 
-      <RiderDetails rider={rider} orders={orders} isAvailable={liveRiderIsAvailable} />
+      <RiderDetails rider={rider} orders={orders} isAvailable={rider.isAvailable} />
 
       <Link to="/admin/riders" className="admin-back-link">
         ← Back to riders

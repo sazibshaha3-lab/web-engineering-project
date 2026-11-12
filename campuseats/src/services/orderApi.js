@@ -1,6 +1,4 @@
-// Backend payment enum is cash/online; the UI uses cod/online as label keys.
-const toUiPayment = (m) => (m === "cash" ? "cod" : m);
-export const toApiPayment = (m) => (m === "online" ? "online" : "cash");
+const toUiPayment = () => "cod";
 
 function normalizeOrderItem(i) {
   const unitPrice = Number(i.price) || 0;
@@ -45,7 +43,7 @@ export function normalizeOrder(o) {
     total: Number(o.total),
     deliveryAddress: normalizeDeliveryAddress(o.deliveryAddress),
     deliveryInstructions: o.deliveryInstructions ?? "",
-    paymentMethod: toUiPayment(o.paymentMethod),
+    paymentMethod: toUiPayment(),
     paymentStatus: o.paymentStatus,
     status: o.status,
     riderId: o.riderId == null ? null : String(o.riderId),
@@ -53,6 +51,7 @@ export function normalizeOrder(o) {
       ? { ...o.rider, id: String(o.rider.id), name: o.rider.user?.name ?? "", phone: o.rider.user?.phone ?? "", avatar: o.rider.user?.avatar ?? "" }
       : null,
     createdAt: o.createdAt,
+    deliveredAt: o.deliveredAt ?? null,
     estimatedDeliveryTime: restaurant.deliveryTime || "30-40 min",
     review: o.review
       ? { restaurantRating: o.review.rating, foodRating: 0, text: o.review.comment ?? "", submittedAt: o.review.createdAt }
@@ -86,12 +85,13 @@ export function toAddressPayload(data) {
   return payload;
 }
 
-export function toOrderPayload({ restaurant, items, deliveryAddress, deliveryInstructions, paymentMethod }) {
+export function toOrderPayload({ restaurant, items, deliveryAddress, deliveryInstructions, idempotencyKey }) {
   return {
     restaurantId: restaurant.id,
     addressId: deliveryAddress.id,
+    idempotencyKey,
     deliveryInstructions: deliveryInstructions || null,
-    paymentMethod: toApiPayment(paymentMethod),
+    paymentMethod: "cash",
     items: items.map((it) => ({
       foodId: it.foodId,
       quantity: it.quantity,

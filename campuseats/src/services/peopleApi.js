@@ -13,6 +13,7 @@ export function normalizeRider(r) {
     rating: Number(r.rating) || 0,
     totalDeliveries: Number(r.totalDeliveries) || 0,
     approvalStatus: r.approvalStatus ?? r.approval_status,
+    isAvailable: Boolean(r.isAvailable ?? r.is_available),
   };
 }
 

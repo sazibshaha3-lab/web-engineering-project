@@ -23,12 +23,20 @@ class AdminInviteCodeSecurityTest extends TestCase
         return array_merge($payload, $extra);
     }
 
+    private function registerVerified(array $payload)
+    {
+        $email = $payload['email'];
+        $this->postJson('/api/register/send-otp', $payload)->assertOk();
+        $this->postJson('/api/register/verify-otp', ['email' => $email, 'code' => '123456'])->assertOk();
+        return $this->postJson('/api/register', ['email' => $email]);
+    }
+
     public function test_admin_registration_is_disabled_without_a_configured_invite_code(): void
     {
         config(['campuseats.admin_registration_code' => '']);
         foreach ([[], ['admin_invite_code' => null], ['admin_invite_code' => ''], ['admin_invite_code' => 'anything']] as $extra) {
             $payload = array_merge($this->payload(), $extra);
-            $this->postJson('/api/register', $payload)
+            $this->postJson('/api/register/send-otp', $payload)
                 ->assertUnprocessable()->assertJsonValidationErrors('admin_invite_code');
         }
         $this->assertDatabaseMissing('users', ['role' => 'admin']);
@@ -38,7 +46,7 @@ class AdminInviteCodeSecurityTest extends TestCase
     {
         config(['campuseats.admin_registration_code' => 'Only-For-Testing-Secret']);
         foreach (['wrong', 'only-for-testing-secret'] as $wrong) {
-            $this->postJson('/api/register', $this->payload('admin', ['admin_invite_code' => $wrong]))
+            $this->postJson('/api/register/send-otp', $this->payload('admin', ['admin_invite_code' => $wrong]))
                 ->assertUnprocessable()->assertJsonValidationErrors('admin_invite_code')
                 ->assertDontSee('Only-For-Testing-Secret');
         }
@@ -48,7 +56,7 @@ class AdminInviteCodeSecurityTest extends TestCase
     public function test_correct_invite_code_creates_admin_and_returns_no_invite_secret(): void
     {
         config(['campuseats.admin_registration_code' => 'Only-For-Testing-Secret']);
-        $response = $this->postJson('/api/register', $this->payload('admin', [
+        $response = $this->registerVerified($this->payload('admin', [
             'admin_invite_code' => 'Only-For-Testing-Secret',
         ]))->assertCreated()->assertJsonPath('user.role', 'admin');
 
@@ -61,7 +69,7 @@ class AdminInviteCodeSecurityTest extends TestCase
     {
         config(['campuseats.admin_registration_code' => 'Only-For-Testing-Secret']);
         foreach (['customer', 'restaurant_owner', 'rider'] as $role) {
-            $this->postJson('/api/register', $this->payload($role, [
+            $this->registerVerified($this->payload($role, [
                 'admin_invite_code' => 'Only-For-Testing-Secret',
             ]))->assertCreated()->assertJsonPath('user.role', $role);
         }
@@ -77,10 +85,10 @@ class AdminInviteCodeSecurityTest extends TestCase
     {
         config(['campuseats.auth_rate_limit' => 2, 'campuseats.admin_registration_code' => 'secret']);
         for ($attempt = 0; $attempt < 2; $attempt++) {
-            $this->postJson('/api/register', $this->payload('admin', ['admin_invite_code' => 'wrong']))
+            $this->postJson('/api/register/send-otp', $this->payload('admin', ['admin_invite_code' => 'wrong']))
                 ->assertUnprocessable();
         }
-        $this->postJson('/api/register', $this->payload('admin', ['admin_invite_code' => 'wrong']))
+        $this->postJson('/api/register/send-otp', $this->payload('admin', ['admin_invite_code' => 'wrong']))
             ->assertStatus(429);
         $this->assertDatabaseMissing('users', ['role' => 'admin']);
     }

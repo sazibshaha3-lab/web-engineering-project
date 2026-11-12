@@ -33,7 +33,8 @@ export default function AdminOrderStatusControl({ order }) {
   function handleAdvance() {
     setConfirmNext(false);
     run("advance", async () => {
-      const result = await updateOrderStatus(order.id, next.status);
+      const result = await updateOrderStatus(order.id, next.status,
+        next.status === "DELIVERED" && order.paymentMethod === "cod" ? { cash_collected: true } : {});
       toast?.showToast(
         result.success ? `Order updated to ${next.status.replace(/_/g, " ").toLowerCase()}.` : "That status change is no longer valid.",
         result.success ? "success" : "error"
@@ -88,7 +89,11 @@ export default function AdminOrderStatusControl({ order }) {
         onClose={() => setConfirmNext(false)}
         onConfirm={handleAdvance}
         title="Update order status?"
-        description={next ? `This will move ${order.id} to "${next.status.replace(/_/g, " ")}". This action reflects instantly for the customer, restaurant and rider.` : ""}
+        description={next
+          ? next.status === "DELIVERED" && order.paymentMethod === "cod"
+            ? `Confirm the customer received ${order.id} and the full cash payment was collected.`
+            : `This will move ${order.id} to "${next.status.replace(/_/g, " ")}". This action reflects instantly for the customer, restaurant and rider.`
+          : ""}
         confirmLabel="Update Status"
       />
       <AdminConfirmDialog

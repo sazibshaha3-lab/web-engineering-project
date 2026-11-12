@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Star, MapPin as RouteIcon } from "lucide-react";
-import ErrorState from "../../components/common/ErrorState";
 import Button from "../../components/common/Button";
 import ImageWithFallback from "../../components/common/ImageWithFallback";
 import OrderStatusBadge from "../../components/order/OrderStatusBadge";
@@ -12,6 +11,8 @@ import RiderInfo from "../../components/order/RiderInfo";
 import ReorderButton from "../../components/order/ReorderButton";
 import CancelOrderDialog from "../../components/order/CancelOrderDialog";
 import RatingReview from "../../components/order/RatingReview";
+import useOrderRecord from "../../hooks/useOrderRecord";
+import OrderLookupState from "../../components/order/OrderLookupState";
 import { useOrders } from "../../context/OrderContext";
 import { useRestaurantData } from "../../context/RestaurantContext";
 import { useToast } from "../../components/feedback/ToastContext";
@@ -20,22 +21,15 @@ import "./OrderDetails.css";
 
 export default function OrderDetails() {
   const { orderId } = useParams();
-  const navigate = useNavigate();
   const toast = useToast();
-  const { getOrderById, cancelOrder } = useOrders();
+  const { cancelOrder } = useOrders();
   const { restaurants } = useRestaurantData();
   const [cancelOpen, setCancelOpen] = useState(false);
-
-  const order = getOrderById(orderId);
+  const { order, loading, error, retry } = useOrderRecord(orderId);
 
   if (!order) {
     return (
-      <ErrorState
-        title="Order not found"
-        description="We couldn't find this order. It may no longer be available."
-        onRetry={() => navigate("/customer/orders")}
-        actionLabel="Back to Orders"
-      />
+      <OrderLookupState loading={loading} error={error} onRetry={retry} backTo="/customer/orders" />
     );
   }
 
@@ -125,7 +119,6 @@ export default function OrderDetails() {
             <DeliveryInfo
               address={order.deliveryAddress}
               instructions={order.deliveryInstructions}
-              paymentMethod={order.paymentMethod}
               paymentStatus={order.paymentStatus}
             />
           </div>

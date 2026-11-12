@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { UtensilsCrossed, ClipboardList, Store } from "lucide-react";
-import PageHeader from "../../components/common/PageHeader";
+import { UtensilsCrossed, ClipboardList, Store, ArrowUpRight, Sparkles } from "lucide-react";
 import DashboardStats from "../../components/restaurant/DashboardStats";
 import RestaurantStatusToggle from "../../components/restaurant/RestaurantStatusToggle";
 import RecentOrders from "../../components/restaurant/RecentOrders";
@@ -11,9 +10,9 @@ import { useAuth } from "../../context/AuthContext";
 import "./RestaurantDashboard.css";
 
 const quickActions = [
-  { to: "/restaurant/menu", icon: UtensilsCrossed, label: "Manage Menu", desc: "Add, edit or remove food items" },
-  { to: "/restaurant/orders", icon: ClipboardList, label: "View Orders", desc: "See incoming and past orders" },
-  { to: "/restaurant/profile", icon: Store, label: "Edit Profile", desc: "Update restaurant information" },
+  { to: "/restaurant/menu", icon: UtensilsCrossed, label: "Manage Menu", desc: "Add, edit or remove food items", tone: "primary" },
+  { to: "/restaurant/orders", icon: ClipboardList, label: "View Orders", desc: "See incoming and past orders", tone: "secondary" },
+  { to: "/restaurant/profile", icon: Store, label: "Edit Profile", desc: "Update restaurant information", tone: "info" },
 ];
 
 export default function RestaurantDashboard() {
@@ -43,8 +42,30 @@ export default function RestaurantDashboard() {
   );
 
   return (
-    <div className="fade-in">
-      <PageHeader title="Restaurant Dashboard" description={user?.name ? `Welcome back, ${user.name}.` : "Manage your restaurant."} />
+    <div className="fade-in rdash">
+      <div className="rdash-hero">
+        <div className="rdash-hero__content">
+          <div className="rdash-hero__badge">
+            <Sparkles size={14} />
+            <span>Restaurant Partner Portal</span>
+          </div>
+          <h1 className="rdash-hero__title">
+            Welcome back, {user?.name || "Partner"} 👋
+          </h1>
+          <p className="rdash-hero__desc">
+            Track live customer orders, update your menu dishes, and keep campus deliveries running smoothly.
+          </p>
+        </div>
+        {restaurant?.name && (
+          <div className="rdash-hero__store-card">
+            <span className="rdash-hero__store-dot" />
+            <div>
+              <span className="rdash-hero__store-label">Active Kitchen</span>
+              <strong className="rdash-hero__store-title">{restaurant.name}</strong>
+            </div>
+          </div>
+        )}
+      </div>
 
       <RestaurantStatusToggle />
 
@@ -57,14 +78,15 @@ export default function RestaurantDashboard() {
 
       <div className="rdash__quick-actions">
         {quickActions.map((action) => (
-          <Link className="rdash__quick-action" to={action.to} key={action.to}>
-            <span className="rdash__quick-action-icon">
-              <action.icon size={19} strokeWidth={2} />
+          <Link className={`rdash__quick-action rdash__quick-action--${action.tone}`} to={action.to} key={action.to}>
+            <span className={`rdash__quick-action-icon rdash__quick-action-icon--${action.tone}`}>
+              <action.icon size={20} strokeWidth={2.2} />
             </span>
-            <span>
+            <span className="rdash__quick-action-text">
               <strong>{action.label}</strong>
               <span>{action.desc}</span>
             </span>
+            <ArrowUpRight size={18} className="rdash__quick-action-arrow" />
           </Link>
         ))}
       </div>

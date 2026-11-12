@@ -1,8 +1,6 @@
 import ImageWithFallback from "../common/ImageWithFallback";
 import "./CheckoutSummary.css";
 
-const paymentLabels = { cod: "Cash on Delivery", online: "Online Payment" };
-
 export default function CheckoutSummary({
   restaurant,
   items,
@@ -11,7 +9,6 @@ export default function CheckoutSummary({
   discount = 0,
   address,
   instructions,
-  paymentMethod,
 }) {
   const total = subtotal + deliveryFee - discount;
 
@@ -78,7 +75,7 @@ export default function CheckoutSummary({
         )}
         <span>
           <strong>Payment: </strong>
-          {paymentLabels[paymentMethod] || "Not selected"}
+          Cash on Delivery
         </span>
       </div>
     </div>

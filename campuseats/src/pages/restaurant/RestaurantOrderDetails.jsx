@@ -1,33 +1,29 @@
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { PackageSearch, User } from "lucide-react";
 import PageHeader from "../../components/common/PageHeader";
-import ErrorState from "../../components/common/ErrorState";
 import OrderStatusBadge from "../../components/order/OrderStatusBadge";
 import OrderStatusTimeline from "../../components/order/OrderStatusTimeline";
 import OrderItems from "../../components/order/OrderItems";
 import DeliveryInfo from "../../components/order/DeliveryInfo";
 import OrderSummary from "../../components/order/OrderSummary";
 import OrderActionButtons from "../../components/restaurant/OrderActionButtons";
-import { useOrders } from "../../context/OrderContext";
+import useOrderRecord from "../../hooks/useOrderRecord";
+import OrderLookupState from "../../components/order/OrderLookupState";
 import { useRestaurantData } from "../../context/RestaurantContext";
 import { liveOrderStatusMap } from "../../utils/statusMaps";
 import "./RestaurantOrderDetails.css";
 
 export default function RestaurantOrderDetails() {
   const { orderId } = useParams();
-  const navigate = useNavigate();
-  const { getOrderById } = useOrders();
   const { restaurant } = useRestaurantData();
-  const order = getOrderById(orderId);
+  const { order, loading, error, retry } = useOrderRecord(orderId);
 
   if (!order || order.restaurantId !== restaurant?.id) {
+    if (!order) {
+      return <OrderLookupState loading={loading} error={error} onRetry={retry} backTo="/restaurant/orders" backLabel="Back to Orders" />;
+    }
     return (
-      <ErrorState
-        title="Order not found"
-        description="We couldn't find this order."
-        onRetry={() => navigate("/restaurant/orders")}
-        actionLabel="Back to Orders"
-      />
+      <OrderLookupState loading={false} error="This order is not available to this restaurant." backTo="/restaurant/orders" backLabel="Back to Orders" />
     );
   }
 
@@ -56,10 +52,14 @@ export default function RestaurantOrderDetails() {
               <User size={14} style={{ verticalAlign: "-2px", marginRight: 6 }} />
               <strong>{order.customer?.name || "Customer"}</strong>
             </p>
+            {order.customer?.phone && (
+              <a className="rorder-details__customer-phone" href={`tel:${order.customer.phone}`}>
+                Call customer · {order.customer.phone}
+              </a>
+            )}
             <DeliveryInfo
               address={order.deliveryAddress}
               instructions={order.deliveryInstructions}
-              paymentMethod={order.paymentMethod}
               paymentStatus={order.paymentStatus}
             />
           </div>

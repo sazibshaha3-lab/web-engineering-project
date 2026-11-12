@@ -45,7 +45,7 @@ class ValidationTest extends TestCase
             $this->assertSame(422,$response->status(),"$method $url should validate; response: {$response->getContent()}");
         }
         $this->postJson('/api/register',['name'=>'New','email'=>'demo@campuseats.test','password'=>'password1','role'=>'customer'])->assertUnprocessable()->assertJsonValidationErrors('email');
-        $this->postJson('/api/register',['name'=>'New','email'=>'new@example.test','password'=>'password1','role'=>'admin'])->assertUnprocessable()->assertJsonValidationErrors('admin_invite_code');
+        $this->postJson('/api/register/send-otp',['name'=>'New','email'=>'new@example.test','password'=>'password1','role'=>'admin'])->assertUnprocessable()->assertJsonValidationErrors('admin_invite_code');
         $this->postJson('/api/register',['name'=>str_repeat('x',256),'email'=>'bad','password'=>2,'role'=>'customer'])->assertUnprocessable();
         $withoutAccept=$this->call('POST','/api/register',[],[],[],['CONTENT_TYPE'=>'application/json'],json_encode([]));
         $this->assertSame(422,$withoutAccept->status());
@@ -61,8 +61,7 @@ class ValidationTest extends TestCase
         $base=['restaurant_id'=>1,'delivery_address'=>'Home','payment_method'=>'cash'];
         foreach ([0,51] as $quantity) $this->withToken($token)->postJson('/api/orders',$base+['items'=>[['food_id'=>$food->id,'quantity'=>$quantity]]])->assertUnprocessable();
         $this->withToken($token)->postJson('/api/orders',$base+['items'=>[['food_id'=>$foreign->id,'quantity'=>1]]])->assertUnprocessable();
-        $response=$this->withToken($token)->postJson('/api/orders',$base+['items'=>[['food_id'=>$food->id,'quantity'=>1,'extras'=>array_filter([$extraId])]]])->assertCreated();
-        $this->assertEmpty($response->json('items.0.selected_extras'));
+        $this->withToken($token)->postJson('/api/orders',$base+['items'=>[['food_id'=>$food->id,'quantity'=>1,'extras'=>array_filter([$extraId])]]])->assertUnprocessable();
     }
 
     public function test_html_and_sql_like_text_round_trip_in_valid_fields(): void

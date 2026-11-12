@@ -1,10 +1,12 @@
 import axios from "axios";
 
 const TOKEN_KEY = "campuseats_token";
-export const getToken = () => localStorage.getItem(TOKEN_KEY);
+// Per-tab session: alada tab-e alada role login korle token mishe jabe na
+export const getToken = () => sessionStorage.getItem(TOKEN_KEY);
 export const setToken = (token) => {
-  if (token) localStorage.setItem(TOKEN_KEY, token);
-  else localStorage.removeItem(TOKEN_KEY);
+  if (token) sessionStorage.setItem(TOKEN_KEY, token);
+  else sessionStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(TOKEN_KEY); // purono shared token muche felo
 };
 
 // Laravel decimal column gulo JSON e string ("250.00") hishebe ashe.
@@ -63,7 +65,8 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error.response?.status === 401 && getToken()) {
+    const isLoginCall = String(error.config?.url || "").startsWith("/login");
+    if (error.response?.status === 401 && !isLoginCall) {
       setToken(null);
       window.dispatchEvent(new Event("auth:expired"));
     }

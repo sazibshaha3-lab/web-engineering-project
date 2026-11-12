@@ -6,6 +6,16 @@ import { useRestaurantData } from "../../context/RestaurantContext";
 import { useToast } from "../feedback/ToastContext";
 import "./ProfileForm.css";
 
+function toTimeInput(value) {
+  const text = String(value ?? "").trim();
+  if (/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(text)) return text;
+
+  const match = text.match(/^(\d{1,2}):([0-5]\d)\s*(AM|PM)$/i);
+  if (!match) return "";
+  const hour = (Number(match[1]) % 12) + (match[3].toUpperCase() === "PM" ? 12 : 0);
+  return `${String(hour).padStart(2, "0")}:${match[2]}`;
+}
+
 export default function ProfileForm({ onDone }) {
   const { restaurant, updateRestaurant } = useRestaurantData();
   const toast = useToast();
@@ -17,8 +27,8 @@ export default function ProfileForm({ onDone }) {
     deliveryFee: restaurant.deliveryFee,
     minimumOrder: restaurant.minimumOrder,
     deliveryTime: restaurant.deliveryTime,
-    openingTime: restaurant.openingTime,
-    closingTime: restaurant.closingTime,
+    openingTime: toTimeInput(restaurant.openingTime),
+    closingTime: toTimeInput(restaurant.closingTime),
   });
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
@@ -82,8 +92,8 @@ export default function ProfileForm({ onDone }) {
       </div>
 
       <div className="profile-form-grid__row">
-        <Input label="Opening time" placeholder="e.g. 10:00 AM" value={form.openingTime} onChange={(e) => update("openingTime", e.target.value)} error={errors.openingTime} />
-        <Input label="Closing time" placeholder="e.g. 11:00 PM" value={form.closingTime} onChange={(e) => update("closingTime", e.target.value)} error={errors.closingTime} />
+        <Input label="Opening time" type="time" step="60" hint="Bangladesh local time (24-hour clock)" value={form.openingTime} onChange={(e) => update("openingTime", e.target.value)} error={errors.openingTime} />
+        <Input label="Closing time" type="time" step="60" hint="Bangladesh local time (24-hour clock)" value={form.closingTime} onChange={(e) => update("closingTime", e.target.value)} error={errors.closingTime} />
       </div>
 
       <div className="profile-form-grid__actions">

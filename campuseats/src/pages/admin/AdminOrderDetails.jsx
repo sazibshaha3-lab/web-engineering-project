@@ -1,51 +1,26 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { PackageSearch, User, Store, Bike } from "lucide-react";
 import PageHeader from "../../components/common/PageHeader";
-import ErrorState from "../../components/common/ErrorState";
 import OrderStatusBadge from "../../components/order/OrderStatusBadge";
 import OrderStatusTimeline from "../../components/order/OrderStatusTimeline";
 import OrderItems from "../../components/order/OrderItems";
 import DeliveryInfo from "../../components/order/DeliveryInfo";
 import OrderSummary from "../../components/order/OrderSummary";
 import AdminOrderStatusControl from "../../components/admin/AdminOrderStatusControl";
+import useOrderRecord from "../../hooks/useOrderRecord";
+import OrderLookupState from "../../components/order/OrderLookupState";
 import { useAdmin } from "../../context/AdminContext";
 import { liveOrderStatusMap } from "../../utils/statusMaps";
 import "./admin-shared.css";
 
 export default function AdminOrderDetails() {
   const { orderId } = useParams();
-  const navigate = useNavigate();
-  const { getOrderById, allRestaurants, riders, ordersLoading, reloadOrders } = useAdmin();
-  const order = getOrderById(orderId);
-  const [refreshedOrderId, setRefreshedOrderId] = useState(null);
-
-  useEffect(() => {
-    let active = true;
-    reloadOrders().finally(() => {
-      if (active) setRefreshedOrderId(orderId);
-    });
-    return () => {
-      active = false;
-    };
-  }, [orderId, reloadOrders]);
+  const { allRestaurants, riders } = useAdmin();
+  const { order, loading, error, retry } = useOrderRecord(orderId);
 
   if (!order) {
-    if (refreshedOrderId !== orderId || ordersLoading) {
-      return (
-        <div className="dashboard-panel" role="status" aria-live="polite">
-          Loading order…
-        </div>
-      );
-    }
-
     return (
-      <ErrorState
-        title="Order not found"
-        description="We couldn't find an order with that ID."
-        onRetry={() => navigate("/admin/orders")}
-        actionLabel="Back to Orders"
-      />
+      <OrderLookupState loading={loading} error={error} onRetry={retry} backTo="/admin/orders" />
     );
   }
 
@@ -87,7 +62,6 @@ export default function AdminOrderDetails() {
             <DeliveryInfo
               address={order.deliveryAddress}
               instructions={order.deliveryInstructions}
-              paymentMethod={order.paymentMethod}
               paymentStatus={order.paymentStatus}
             />
           </div>

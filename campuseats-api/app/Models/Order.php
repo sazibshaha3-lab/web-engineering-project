@@ -10,11 +10,12 @@ class Order extends Model
         'order_number', 'customer_id', 'restaurant_id', 'rider_id', 'address_id',
         'delivery_address', 'delivery_instructions', 'subtotal', 'delivery_fee',
         'discount', 'total', 'payment_method', 'payment_status', 'status',
-        'estimated_delivery_time',
+        'estimated_delivery_time', 'delivered_at', 'idempotency_key', 'idempotency_hash',
     ];
 
     protected $casts = [
         'estimated_delivery_time' => 'datetime',
+        'delivered_at' => 'datetime',
         'delivery_address' => 'array',
     ];
 

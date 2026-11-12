@@ -9,11 +9,13 @@ export default function RiderAvailabilityToggle() {
   const toast = useToast();
   const isApproved = rider.approvalStatus === "APPROVED";
 
-  function handleToggle() {
-    setAvailability(!isAvailable);
+  async function handleToggle(nextAvailability) {
+    const result = await setAvailability(nextAvailability);
     toast?.showToast(
-      isAvailable ? "You are now unavailable" : "You are now available for deliveries",
-      "success"
+      result.success
+        ? (nextAvailability ? "You are now available for deliveries" : "You are now unavailable")
+        : result.message,
+      result.success ? "success" : "error"
     );
   }
 

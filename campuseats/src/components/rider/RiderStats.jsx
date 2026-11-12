@@ -7,7 +7,7 @@ export default function RiderStats({ todaysDeliveries, activeDelivery, completed
       <StatCard icon={PackageCheck} label="Today's deliveries" value={todaysDeliveries} tone="primary" />
       <StatCard icon={Bike} label="Active delivery" value={activeDelivery} tone="accent" />
       <StatCard icon={CheckCircle2} label="Completed deliveries" value={completedDeliveries} tone="secondary" />
-      <StatCard icon={Wallet} label="Today's earnings" value={`৳${todaysEarnings}`} tone="info" />
+      <StatCard icon={Wallet} label="Today's earnings" value={todaysEarnings == null ? "Not configured" : `৳${todaysEarnings}`} tone="info" />
     </div>
   );
 }

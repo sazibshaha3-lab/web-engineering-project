@@ -9,7 +9,6 @@ import { ShoppingBag, ClipboardCheck } from "lucide-react";
 import AddressSection from "../../components/checkout/AddressSection";
 import DeliveryInstructions from "../../components/checkout/DeliveryInstructions";
 import PaymentMethodSelector from "../../components/checkout/PaymentMethodSelector";
-import MockPaymentForm from "../../components/checkout/MockPaymentForm";
 import CheckoutSummary from "../../components/checkout/CheckoutSummary";
 import PlaceOrderButton from "../../components/checkout/PlaceOrderButton";
 
@@ -19,10 +18,13 @@ import { useOrders } from "../../context/OrderContext";
 import { useRestaurantData } from "../../context/RestaurantContext";
 import { useToast } from "../../components/feedback/ToastContext";
 import { validateRestaurantFoodRelation } from "../../utils/dataValidation";
-import { validateMockPaymentForm, simulateMockPayment } from "../../utils/paymentMock";
 import "./Checkout.css";
 
-const emptyPaymentForm = { name: "", number: "", expiry: "", cvv: "" };
+const IDEMPOTENCY_STORAGE_KEY = "campuseats_checkout_idempotency_key";
+
+function clearCheckoutAttempt() {
+  try { sessionStorage.removeItem(IDEMPOTENCY_STORAGE_KEY); } catch { /* storage may be unavailable */ }
+}
 
 export default function Checkout() {
   const navigate = useNavigate();
@@ -31,13 +33,14 @@ export default function Checkout() {
   const { selectedAddress } = useAddresses();
   const { createOrder } = useOrders();
   const { restaurants, foods } = useRestaurantData();
+  const [idempotencyKey] = useState(() => {
+    try { return sessionStorage.getItem(IDEMPOTENCY_STORAGE_KEY); } catch { return null; }
+  });
+  const idempotencyKeyRef = useRef(idempotencyKey);
+  const placingRef = useRef(false);
 
   const [instructions, setInstructions] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("cod");
-  const [paymentForm, setPaymentForm] = useState(emptyPaymentForm);
-  const [paymentErrors, setPaymentErrors] = useState({});
   const [placing, setPlacing] = useState(false);
-  const [paymentFailed, setPaymentFailed] = useState(false);
   const addressSectionRef = useRef(null);
 
   const restaurant = useMemo(
@@ -67,55 +70,44 @@ export default function Checkout() {
     !hasInvalidCart &&
     !placing;
 
-  function handlePaymentFormChange(next) {
-    setPaymentForm(next);
-    setPaymentErrors({});
-    setPaymentFailed(false);
-  }
+  async function handlePlaceOrder() {
+    if (!canPlaceOrder || placingRef.current) return;
+    placingRef.current = true;
+    let checkoutKey = idempotencyKeyRef.current;
+    if (!checkoutKey) {
+      checkoutKey = globalThis.crypto?.randomUUID?.()
+        ?? "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (char) => {
+          const random = Math.random() * 16 | 0;
+          return (char === "x" ? random : (random & 0x3 | 0x8)).toString(16);
+        });
+      idempotencyKeyRef.current = checkoutKey;
+      try { sessionStorage.setItem(IDEMPOTENCY_STORAGE_KEY, checkoutKey); } catch { /* storage may be unavailable */ }
+    }
+    setPlacing(true);
+    const result = await createOrder({
+      restaurant,
+      items,
+      deliveryAddress: selectedAddress,
+      deliveryInstructions: instructions,
+      idempotencyKey: checkoutKey,
+    });
 
-  function handlePlaceOrder() {
-    if (!canPlaceOrder) return;
-    if (paymentMethod === "online") {
-      const { valid, errors } = validateMockPaymentForm(paymentForm);
-      if (!valid) {
-        setPaymentErrors(errors);
-        return;
+    if (!result.success) {
+      if (result.reason === "IDEMPOTENCY_CONFLICT") {
+        idempotencyKeyRef.current = null;
+        clearCheckoutAttempt();
       }
+      placingRef.current = false;
+      setPlacing(false);
+      toast?.showToast(result.message, "error");
+      return;
     }
 
-    setPlacing(true);
-    setPaymentFailed(false);
-
-    setTimeout(async () => {
-      if (paymentMethod === "online") {
-        const result = simulateMockPayment(paymentForm);
-        if (!result.success) {
-          setPlacing(false);
-          setPaymentFailed(true);
-          toast?.showToast("Payment was not completed", "error");
-          return;
-        }
-      }
-
-      // Price, delivery fee ar total server nijei hishab kore
-      const result = await createOrder({
-        restaurant,
-        items,
-        deliveryAddress: selectedAddress,
-        deliveryInstructions: instructions,
-        paymentMethod,
-      });
-
-      if (!result.success) {
-        setPlacing(false);
-        toast?.showToast(result.message, "error");
-        return;
-      }
-
-      clearCart();
-      toast?.showToast("Order placed successfully", "success");
-      navigate("/customer/order-success", { state: { orderId: result.order.id } });
-    }, 1100);
+    idempotencyKeyRef.current = null;
+    clearCheckoutAttempt();
+    clearCart();
+    toast?.showToast("Order placed successfully", "success");
+    navigate("/customer/order-success", { state: { orderId: result.order.id } });
   }
 
   if (items.length === 0) {
@@ -173,10 +165,7 @@ export default function Checkout() {
               <span className="checkout-section__number">3</span>
               <Wallet2 size={17} strokeWidth={2} /> Payment method
             </h3>
-            <PaymentMethodSelector value={paymentMethod} onChange={setPaymentMethod} />
-            {paymentMethod === "online" && (
-              <MockPaymentForm form={paymentForm} onChange={handlePaymentFormChange} errors={paymentErrors} />
-            )}
+            <PaymentMethodSelector />
           </div>
         </div>
 
@@ -187,16 +176,6 @@ export default function Checkout() {
             </h3>
           </div>
 
-          {paymentFailed && (
-            <div className="checkout-page__payment-failed">
-              <AlertTriangle size={20} strokeWidth={2} style={{ flexShrink: 0 }} />
-              <div>
-                <strong>Payment was not completed</strong>
-                <p>Please check the payment details and try again.</p>
-              </div>
-            </div>
-          )}
-
           <CheckoutSummary
             restaurant={restaurant}
             items={items}
@@ -205,7 +184,6 @@ export default function Checkout() {
             discount={discount}
             address={selectedAddress}
             instructions={instructions}
-            paymentMethod={paymentMethod}
           />
 
           <div className="checkout-page__place-order">

@@ -35,7 +35,7 @@ export default function DeliveryActionButtons({ order }) {
 
   function handleConfirmDelivered() {
     setDeliveredOpen(false);
-    runAction(markDelivered, "Delivery completed");
+    runAction((id) => markDelivered(id, true), "Delivery completed");
   }
 
   if (order.status === "READY_FOR_PICKUP") {
@@ -82,7 +82,9 @@ export default function DeliveryActionButtons({ order }) {
           onClose={() => setDeliveredOpen(false)}
           onConfirm={handleConfirmDelivered}
           title="Complete this delivery?"
-          description="Confirm that the order has been delivered to the customer."
+          description={order.paymentMethod === "cod"
+            ? "Confirm that you delivered the order and collected the full cash payment from the customer."
+            : "Confirm that you delivered the order to the customer."}
           confirmLabel="Mark Delivered"
           cancelLabel="Not Yet"
         />

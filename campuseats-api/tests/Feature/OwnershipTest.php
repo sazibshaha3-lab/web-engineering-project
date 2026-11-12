@@ -89,6 +89,7 @@ class OwnershipTest extends TestCase
     {
         $riderToken = $this->token('rider@campuseats.test', 'Rider123!');
         $rider = User::where('email', 'rider@campuseats.test')->firstOrFail()->rider;
+        $this->as($riderToken)->patchJson('/api/rider/availability', ['is_available' => true])->assertOk();
         $otherUser = User::create(['name' => 'Other rider', 'email' => 'rider-two@test.local', 'password' => 'Passw0rd!', 'role' => 'rider']);
         $otherRider = Rider::create(['user_id' => $otherUser->id, 'approval_status' => 'APPROVED']);
         $customer = User::where('email', 'demo@campuseats.test')->firstOrFail();

@@ -24,7 +24,7 @@ export function AdminProvider({ children }) {
     blockRestaurant,
     unblockRestaurant,
   } = useRestaurantData();
-  const { riders, isAvailable, approveRider, rejectRider, blockRider, unblockRider } = useRider();
+  const { riders, approveRider, rejectRider, blockRider, unblockRider } = useRider();
 
   const stats = useMemo(() => {
     const activeOrders = orders.filter((o) => isLiveOrderActive(o.status)).length;
@@ -70,7 +70,6 @@ export function AdminProvider({ children }) {
     allRestaurants,
     foods,
     riders,
-    liveRiderIsAvailable: isAvailable,
     getOrderById,
     // Derived, deterministic — recomputed from current state, never
     // random or duplicated.

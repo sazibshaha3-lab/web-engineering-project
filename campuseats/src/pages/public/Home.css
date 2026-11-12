@@ -1,3 +1,9 @@
+#how-it-works,
+#community,
+#partnerships {
+  scroll-margin-top: 86px;
+}
+
 .hero {
   padding-block: var(--space-6) var(--space-10);
   overflow: hidden;
@@ -5,7 +11,13 @@
 }
 
 @media (min-width: 768px) {
-  .hero {
+  #how-it-works,
+#community,
+#partnerships {
+  scroll-margin-top: 86px;
+}
+
+.hero {
     padding-block: var(--space-10) var(--space-16);
   }
 }

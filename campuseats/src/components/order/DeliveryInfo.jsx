@@ -1,11 +1,7 @@
-import { MapPin, MessageSquare, Wallet2, CreditCard } from "lucide-react";
+import { MapPin, MessageSquare, Wallet2 } from "lucide-react";
 import "./DeliveryInfo.css";
 
-const paymentLabels = { cod: "Cash on Delivery", online: "Online Payment" };
-const paymentIcons = { cod: Wallet2, online: CreditCard };
-
-export default function DeliveryInfo({ address, instructions, paymentMethod, paymentStatus }) {
-  const PaymentIcon = paymentIcons[paymentMethod] || Wallet2;
+export default function DeliveryInfo({ address, instructions, paymentStatus }) {
 
   return (
     <div>
@@ -38,11 +34,11 @@ export default function DeliveryInfo({ address, instructions, paymentMethod, pay
 
       <div className="delivery-info__row">
         <span className="delivery-info__icon">
-          <PaymentIcon size={16} strokeWidth={2} />
+          <Wallet2 size={16} strokeWidth={2} />
         </span>
         <div>
           <p className="delivery-info__label">Payment</p>
-          <p className="delivery-info__value">{paymentLabels[paymentMethod] || paymentMethod}</p>
+          <p className="delivery-info__value">Cash on Delivery</p>
           <p className="delivery-info__sub">{paymentStatus}</p>
         </div>
       </div>

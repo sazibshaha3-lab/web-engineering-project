@@ -8,6 +8,7 @@ use App\Models\Restaurant;
 use App\Models\Rider;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -30,7 +31,9 @@ class AdminController extends Controller
             'orders' => [
                 'total' => Order::count(),
                 'delivered' => Order::where('status', 'DELIVERED')->count(),
-                'active' => Order::whereNotIn('status', ['DELIVERED', 'CANCELLED', 'REJECTED'])->count(),
+                'active' => Order::whereNotIn('status', ['DELIVERED', 'CANCELLED', 'REJECTED'])
+                    ->where(fn ($orders) => $orders->where('payment_method', 'cash')->orWhere('payment_status', 'PAID'))
+                    ->count(),
             ],
             'revenue' => (float) Order::where('status', 'DELIVERED')->sum('total'),
         ];
@@ -50,17 +53,21 @@ class AdminController extends Controller
     public function setRestaurantApproval(Request $request, Restaurant $restaurant)
     {
         $data = $request->validate(['approval_status' => 'required|in:PENDING,APPROVED,REJECTED']);
-        $restaurant->update($data);
+        DB::transaction(function () use ($restaurant, $data) {
+            Restaurant::lockForUpdate()->findOrFail($restaurant->id)->update($data);
+        });
 
-        return $restaurant;
+        return $restaurant->fresh();
     }
 
     public function setRestaurantBlocked(Request $request, Restaurant $restaurant)
     {
         $data = $request->validate(['blocked' => 'required|boolean']);
-        $restaurant->update($data);
+        DB::transaction(function () use ($restaurant, $data) {
+            Restaurant::lockForUpdate()->findOrFail($restaurant->id)->update($data);
+        });
 
-        return $restaurant;
+        return $restaurant->fresh();
     }
 
     public function riders(Request $request)
@@ -77,7 +84,13 @@ class AdminController extends Controller
     public function setRiderApproval(Request $request, Rider $rider)
     {
         $data = $request->validate(['approval_status' => 'required|in:PENDING,APPROVED,REJECTED,BLOCKED']);
-        $rider->update($data);
+        if ($data['approval_status'] !== 'APPROVED') {
+            $data['is_available'] = false;
+        }
+        DB::transaction(function () use ($rider, $data) {
+            Rider::lockForUpdate()->findOrFail($rider->id)->update($data);
+        });
+        $rider->refresh();
 
         // Blocked rider er login session sathe sathe bondho
         if ($data['approval_status'] === 'BLOCKED') {
@@ -111,4 +124,5 @@ class AdminController extends Controller
 
         return $user->loadCount('orders');
     }
+
 }

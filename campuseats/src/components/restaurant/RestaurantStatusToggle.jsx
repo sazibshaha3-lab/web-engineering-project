@@ -17,12 +17,13 @@ export default function RestaurantStatusToggle() {
       <div>
         <p className="rstatus-toggle__title">
           <span className="rstatus-toggle__dot" />
-          Restaurant is {isOpen ? "Open" : "Closed"}
+          <span>Restaurant is {isOpen ? "Open" : "Closed"}</span>
+          <span className="rstatus-toggle__badge">{isOpen ? "Accepting Orders" : "Paused"}</span>
         </p>
         <p className="rstatus-toggle__desc">
           {isOpen
-            ? "Customers can place new orders right now."
-            : "Your menu stays visible, but customers can't check out."}
+            ? "Students and campus customers can place new orders right now."
+            : "Your menu stays visible, but customer checkout is temporarily paused."}
         </p>
       </div>
       <Switch checked={isOpen} onChange={handleToggle} label="Toggle restaurant open status" />

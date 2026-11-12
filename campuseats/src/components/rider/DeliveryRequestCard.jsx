@@ -1,11 +1,9 @@
 import { useState } from "react";
-import { Store, MapPin, Navigation, Clock } from "lucide-react";
+import { Store, MapPin, Clock } from "lucide-react";
 import Button from "../common/Button";
-import { estimateDistanceKm } from "../../utils/riderMock";
 
 export default function DeliveryRequestCard({ order, restaurant, onAccept, onDecline }) {
   const [accepting, setAccepting] = useState(false);
-  const distance = estimateDistanceKm(order.id);
 
   async function handleAccept() {
     if (accepting) return;
@@ -41,13 +39,15 @@ export default function DeliveryRequestCard({ order, restaurant, onAccept, onDec
           </span>
           <div>
             <span>Deliver to</span>
-            <strong>{order.deliveryAddress?.label} · {order.customer?.name || "Customer"}</strong>
+            <strong>
+              {order.deliveryAddress?.area || order.deliveryAddress?.city || "Area shown after acceptance"}
+            </strong>
           </div>
         </div>
       </div>
 
       <div className="delivery-request-card__meta">
-        <span><Navigation size={13} strokeWidth={2} /> {distance} km</span>
+        <span><MapPin size={13} strokeWidth={2} /> Exact location after acceptance</span>
         <span><Clock size={13} strokeWidth={2} /> {order.estimatedDeliveryTime}</span>
       </div>
 
